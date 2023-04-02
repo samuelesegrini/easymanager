@@ -1,0 +1,92 @@
+//
+//  SideBarView.swift
+//  copiaristorante
+//
+//  Created by Samuele Segrini on 29/11/22.
+//
+
+import SwiftUI
+
+struct SideBarView: View {
+    @EnvironmentObject var auth: AuthenticationViewModel
+    
+    @State private var presentingProfileScreen = false
+    
+    var body: some View {
+        VStack{
+            List{
+                if !auth.utente.userRoles.filter({ $0 == "pos"}).isEmpty {
+                    Section {
+                        NavigationButton(title: "POS", imageName: "wallet.pass", color: .orange, nextView: CashDesk())
+
+                    }header: {
+                        Text("Cassa Ristorante")
+                    }footer: {
+                        Text("Descrizione funzioni")
+                    }
+                    
+                }else if !auth.utente.userRoles.filter({$0 == "cameriere"}).isEmpty {
+                    Section {
+                        NavigationButton(title: "Ordina", imageName: "fork.knife", color: .yellow, nextView: OrdersView())
+                        
+                    }header: {
+                        Text("Fai un Ordine")
+                    }footer: {
+                        Text("Descrizione Funzioni")
+                    }
+                }
+                Section {
+                    NavigationButton(title: "Tavoli", imageName: "table.furniture", color: .purple, nextView: DiningView())
+    
+                    NavigationButton(title: "Prenotazioni", imageName: "book", color: .red, nextView: BookingView())
+                }header: {
+                    Text("Sala")
+                }footer: {
+                    Text("Descrizione funzioni")
+                }
+                Section {
+                    NavigationButton(title: "Inventario", imageName: "shippingbox", color: .blue, nextView: WarehouseView())
+
+                    NavigationButton(title: "\(auth.utente.userName) \(auth.utente.userSurname)", imageName: "person.and.background.dotted", color: .green, nextView: ProfileView())
+
+                } header: {
+                    Text("Gestione Ristorante")
+                }footer: {
+                    Text("Descrizione funzioni")
+                }
+            }
+            .listStyle(.insetGrouped)
+            .scrollContentBackground(.hidden)
+            
+        }
+        .background(.ultraThinMaterial)
+    }
+}
+
+
+struct NavigationButton<TargetView: View>: View {
+    
+    var title: String
+    var imageName: String
+    var color: Color
+    var nextView: TargetView
+    
+    var body: some View {
+        NavigationLink(destination: nextView) {
+            HStack {
+                ZStack{
+                    Rectangle()
+                        .cornerRadius(10)
+                        .frame(width: 35,height: 35)
+                        .foregroundColor(color)
+                    Image(systemName: imageName).bold()
+                        .foregroundColor(.white)
+                }
+                .padding(5)
+                Text(title).font(.headline.bold())
+                    .foregroundColor(.primary)
+            }
+        }
+        .foregroundColor(.secondary)
+    }
+}
