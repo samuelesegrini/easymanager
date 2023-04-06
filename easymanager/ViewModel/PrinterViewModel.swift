@@ -2,7 +2,7 @@
 //  PrinterViewModel.swift
 //  easymanager
 //
-//  Created by Samuele Segrini on 02/04/23.
+//  Created by Samuele Segrini on 03/04/23.
 //
 
 import Foundation
@@ -16,12 +16,128 @@ enum ReceiptType: String, CaseIterable {
 
 class PrinterViewModel : NSObject, ObservableObject {
     
-    @Published var receiptType: ReceiptType = .preconto
+    @Published var receiptType: ReceiptType = .scontrinoFiscale
     @Published var errorConnection: String?
     
     private var xmlString: String = ""
         
-    func sendXMLRequest(receipt: OrderStruct) {
+    func printXZReport(user : UserStruct) {
+        let urlString = "http://192.168.001.150/cgi-bin/fpmate.cgi"
+        guard let url = URL(string: urlString) else {
+            print("Invalid URL")
+            return
+        }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        
+        xmlString = """
+        <?xml version=\"1.0\" encoding=\"utf-8\" ?>
+            <s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\">
+            <s:Body>
+        """
+        
+        xmlString.append( """
+                <printXZReport operator=\"\(user.userNOperator)\" timeout=\"1000\" />
+            """
+        )
+        xmlString.append("""
+            </s:Body>
+            </s:Envelope>
+            """
+        )
+        
+        request.httpBody = xmlString.data(using: .utf8)
+        request.addValue("application/xml", forHTTPHeaderField: "Content-Type")
+        request.addValue("text/xml", forHTTPHeaderField: "Accept")
+        
+        let task = URLSession.shared.dataTask(with: request) { [weak self] (data, response, error) in
+            if let error = error {
+                DispatchQueue.main.async {
+                    self?.errorConnection = error.localizedDescription
+                }
+                return
+            }
+        }
+        task.resume()
+    }
+    func printXReport(user : UserStruct) {
+        let urlString = "http://192.168.001.150/cgi-bin/fpmate.cgi"
+        guard let url = URL(string: urlString) else {
+            print("Invalid URL")
+            return
+        }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        
+        xmlString = """
+        <?xml version=\"1.0\" encoding=\"utf-8\" ?>
+            <s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\">
+            <s:Body>
+        """
+        
+        xmlString.append( """
+                <printXReport operator=\"\(user.userNOperator)\" />
+            """
+        )
+        xmlString.append("""
+            </s:Body>
+            </s:Envelope>
+            """
+        )
+        request.httpBody = xmlString.data(using: .utf8)
+        request.addValue("application/xml", forHTTPHeaderField: "Content-Type")
+        request.addValue("text/xml", forHTTPHeaderField: "Accept")
+        
+        let task = URLSession.shared.dataTask(with: request) { [weak self] (data, response, error) in
+            if let error = error {
+                DispatchQueue.main.async {
+                    self?.errorConnection = error.localizedDescription
+                }
+                return
+            }
+        }
+        task.resume()
+    }
+    func printInvoiceLastReceipt(user : UserStruct) {
+        let urlString = "http://192.168.001.150/cgi-bin/fpmate.cgi"
+        guard let url = URL(string: urlString) else {
+            print("Invalid URL")
+            return
+        }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        
+        xmlString = """
+        <?xml version=\"1.0\" encoding=\"utf-16\" ?>
+            <s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\">
+            <s:Body>
+            <printerFiscalDocument>
+        """
+        xmlString.append( """
+                    <printFiscalDocument operator=\"\(user.userNOperator)\" document=\"Invoice\" number=\"0\" />
+            """
+        )
+        xmlString.append( """
+                        </printerFiscalDocument>
+                         </s:Body>
+                         </s:Envelope>
+                    """
+        )
+        request.httpBody = xmlString.data(using: .utf8)
+        request.addValue("application/xml", forHTTPHeaderField: "Content-Type")
+        request.addValue("text/xml", forHTTPHeaderField: "Accept")
+        
+        let task = URLSession.shared.dataTask(with: request) { [weak self] (data, response, error) in
+            if let error = error {
+                DispatchQueue.main.async {
+                    self?.errorConnection = error.localizedDescription
+                }
+                return
+            }
+        }
+        task.resume()
+    }
+    func sendXMLRequest(receipt: OrderStruct, subtotale : Double, pagamento : [pagamento], user : UserStruct) {
         var ricevuta = receipt
         ricevuta.orderFood.removeAll { food in
             food.foodReversed == true
@@ -40,31 +156,94 @@ class PrinterViewModel : NSObject, ObservableObject {
         switch receiptType {
         case .preconto:
             xmlString = """
-                testo xml del preconto
+            <?xml version=\"1.0\" encoding=\"utf-8\" ?>
+                <s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\">
+                <s:Body>
+                <printerNonFiscalReceipt>
+                <beginNonFiscal operator=\"\(user.userNOperator)\" />
+
             """
+            for food in receipt.orderFood {
+                xmlString.append("""
+                                    <printNormal operator="\(user.userNOperator)" data="\(food.foodQuantity)X \(food.foodName)      \(food.foodIva)% " />
+                                    <printNormal operator=\"\(user.userNOperator)\" font=\"1\" data=\"\" comment=\"Add blank line (whitespace)\" />
+                                 """
+                )
+            }
+            xmlString.append("""
+                <endNonFiscal operator=\"\(user.userNOperator)\" />
+                </printerFiscalReceipt>
+                </s:Body>
+                </s:Envelope>
+                """
+            )
         case .fattura:
             xmlString = """
-                testo xml della fattura
+            <?xml version=\"1.0\" encoding=\"utf-8\" ?>
+                <s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\">
+                <s:Body>
+                <printerFiscalReceipt>
+                <beginFiscalReceipt operator=\"\(user.userNOperator)\" />
             """
+            for food in receipt.orderFood {
+                var department = 1
+                if food.foodIva == "22"{
+                    department = 1
+                }else if food.foodIva == "10"{
+                    department = 2
+                }else if food.foodIva == "4"{
+                    department = 3
+                    
+                    xmlString.append("""
+                                    <printRecItem operator=\"\(user.userNOperator)\" description=\"\(food.foodName)\" quantity=\"\(food.foodQuantity)\" unitPrice=\"\(food.foodPrice)\" department=\"\(department)\"/>
+                                 """
+                    )
+                }
+            }
+            for pay in pagamento{
+                xmlString.append( """
+                                <printRecTotal operator=\"\(user.userNOperator)\" description=\"DA PAGARE\" payment=\"\(pay.pagamentoImporto)\" paymentType=\"\(pay.pagamentoTipo)\" index=\"\(pay.pagamentoTipo == 0 ? 0 : pay.pagamentoTipo == 1 ? 0 : pay.pagamentoTipo == 2 ? 1 : pay.pagamentoTipo == 3 ? 1 : 0)\" />"
+                                """
+                )
+            }
+            xmlString.append("""
+                <endFiscalReceipt operator=\"\(user.userNOperator)\" />
+                </printerFiscalReceipt>
+                </s:Body>
+                </s:Envelope>
+                """
+            )
         case .scontrinoFiscale:
             xmlString = """
             <?xml version=\"1.0\" encoding=\"utf-8\" ?>
                 <s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\">
                 <s:Body>
                 <printerFiscalReceipt>
-                <beginFiscalReceipt operator=\"10\" />
+                <beginFiscalReceipt operator=\"\(user.userNOperator)\" />
             """
             for food in receipt.orderFood {
-                xmlString.append("""
-                                    <printRecItem operator=\"10\" description=\"\(food.foodName)\" quantity=\"\(food.foodQuantity)\" unitPrice=\"\(food.foodPrice)\" department=\"1\"/>
-                                    <printRecItemAdjustment operator="10" adjustmentType="5" description="Ciccio Pasticcio" amount="15" />
+                var department = 1
+                if food.foodIva == "22"{
+                    department = 1
+                }else if food.foodIva == "10"{
+                    department = 2
+                }else if food.foodIva == "4"{
+                    department = 3
+                    
+                    xmlString.append("""
+                                    <printRecItem operator=\"\(user.userNOperator)\" description=\"\(food.foodName)\" quantity=\"\(food.foodQuantity)\" unitPrice=\"\(food.foodPrice)\" department=\"\(department)\"/>
                                  """
+                    )
+                }
+            }
+            for pay in pagamento{
+                xmlString.append( """
+                                <printRecTotal operator=\"\(user.userNOperator)\" description=\"DA PAGARE\" payment=\"\(pay.pagamentoImporto)\" paymentType=\"\(pay.pagamentoTipo)\" index=\"\(pay.pagamentoTipo == 0 ? 0 : pay.pagamentoTipo == 1 ? 0 : pay.pagamentoTipo == 2 ? 1 : pay.pagamentoTipo == 3 ? 1 : 0)\" />"
+                                """
                 )
             }
             xmlString.append("""
-                    <printRecTotal operator=\"10\" description=\"CONTANTE\" payment=\"\(receipt.orderTotalPrice)\" paymentType=\"2\" index=\"0\" justification=\"1\" />"
-                <printRecMessage  operator=\"10\" messageType=\"3\" index=\"1\" font=\"4\" message=\"Arrivederci e Grazie\" />
-                <endFiscalReceipt operator=\"10\" />
+                <endFiscalReceipt operator=\"\(user.userNOperator)\" />
                 </printerFiscalReceipt>
                 </s:Body>
                 </s:Envelope>
@@ -87,90 +266,3 @@ class PrinterViewModel : NSObject, ObservableObject {
         task.resume()
     }
 }
-
-
-
-
-/*
- @Published var printers: [String] = []
- @AppStorage("selectedPrinterIP") var selectedPrinterIP: String?
- 
- var browser: NetServiceBrowser!
- private var services: [NetService] = []
-     
- override init() {
-     super.init()
-     self.browser = NetServiceBrowser()
-     self.browser.delegate = self
-     self.browser.searchForServices(ofType: "_printer._tcp", inDomain: "")
- }
- 
- extension PrinterViewModel: NetServiceBrowserDelegate {
-     func netServiceBrowser(_ browser: NetServiceBrowser, didFind service: NetService, moreComing: Bool) {
-         printers.append(service.name)
-         service.delegate = self
-         service.resolve(withTimeout: 5)
-         services.append(service)
-     }
-     
-     func netServiceBrowser(_ browser: NetServiceBrowser, didRemove service: NetService, moreComing: Bool) {
-         if let index = services.firstIndex(of: service) {
-             services.remove(at: index)
-             printers.remove(at: index)
-         }
-     }
-     
-     func netServiceBrowserWillSearch(_ browser: NetServiceBrowser) {
-         services.forEach { $0.stop() }
-         selectedPrinterIP = nil
-     }
- }
-
- extension PrinterViewModel: NetServiceDelegate {
-     func netServiceDidResolveAddress(_ sender: NetService) {
-         if let address = sender.addresses?.first {
-             let host = String(describing: address)
-             let components = host.components(separatedBy: ":")
-             if components.count >= 2 {
-                 let ip = components[0]
-                 if ip == selectedPrinterIP {
-                     sender.stop()
-                     selectedPrinterIP = nil
-                 }
-             }
-         }
-     }
- }
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- var xmlString = """
- <?xml version=\"1.0\" encoding=\"utf-8\" ?>
-     <s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\">
-     <s:Body>
-     <printerFiscalReceipt>
-     <beginFiscalReceipt operator=\"10\" />
- """
- for food in receipt.food {
-     xmlString.append("""
-                         <printRecItem operator=\"10\" description=\"\(food.foodName)\" quantity=\"\(food.foodQuantity)\" unitPrice=\"\(food.foodPrice)\" department=\"1\" justification=\"1\" />
-                      """
-     )
- }
- xmlString.append("""
-         <printRecTotal operator=\"10\" description=\"CONTANTE\" payment=\"\(receipt.totalPrice)\" paymentType=\"2\" index=\"0\" justification=\"1\" />"
-     <printRecMessage  operator=\"10\" messageType=\"3\" index=\"1\" font=\"4\" message=\"Arrivederci e Grazie\" />
-     <endFiscalReceipt operator=\"10\" />
-     </printerFiscalReceipt>
-     </s:Body>
-     </s:Envelope>
-     """
- )
- */

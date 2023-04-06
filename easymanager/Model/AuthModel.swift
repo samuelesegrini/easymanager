@@ -12,12 +12,14 @@ struct UserStruct: Identifiable, Codable  {
     @DocumentID var id: String?
      
     var userName : String
-    var userRestaurantID : String
+    var userRestaurantID = "N1VqnVlgKcc1B7MuFBM0"
     var userSurname: String
     var userEmail: String
     var userRoles: [String]
+    
+    var userNOperator: Int
 }
 extension UserStruct {
-    static let empty = UserStruct(userName: "", userRestaurantID: "", userSurname: "", userEmail: "", userRoles: [])
+    static let empty = UserStruct(userName: "", userRestaurantID: "N1VqnVlgKcc1B7MuFBM0", userSurname: "", userEmail: "", userRoles: [], userNOperator: 0)
     
 }

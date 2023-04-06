@@ -103,9 +103,6 @@ struct gray : Theme {
     var themeName: String = "gray"
 }
 
-
-
-
 class DataSource: ObservableObject {
     @AppStorage("selectedTheme") var selectedThemeAS = 1{
         didSet{
@@ -122,4 +119,3 @@ class DataSource: ObservableObject {
         selectedTheme = ThemeManager.getTheme(selectedThemeAS)
     }
 }
-

@@ -49,9 +49,6 @@ extension OrderViewModel {
                                 // A OrderStruct value was successfully initialized from the DocumentSnapshot.
                                 self?.errorMessage = nil
                                 
-                                if list.id == "prova" || list.restaurantID == ""{
-                                    return nil
-                                }
                                 return list
                             case .failure(let error):
                                 // A OrderStruct value could not be initialized from the DocumentSnapshot.
@@ -78,56 +75,118 @@ extension OrderViewModel {
         do{
             try db.collection("ordine").addDocument(from: orderToModifyOrDelete)
             self.fetchAndMap()
+            orderToModifyOrDelete = OrderStruct.empty
             errorMessage = ""
         }catch{
             errorMessage = error.localizedDescription
+            orderToModifyOrDelete = OrderStruct.empty
         }
     }
-    func deleteData(){
-        db.collection("ordine").document(orderToModifyOrDelete.id ?? "").delete() { error in
+    func deleteData(order: OrderStruct){
+        let id = orderList.first { ord in
+            ord.orderSenderID == order.orderSenderID && ord.orderTable == order.orderTable && ord.orderTime == order.orderTime
+        }?.id ?? ""
+        db.collection("ordine").document(id).delete { error in
             if error == nil {
                 DispatchQueue.main.async {
-                    self.orderList.removeAll{ order in
-                        return order.id == self.orderToModifyOrDelete.id
+                    self.orderList.removeAll{ ord in
+                        return ord.id == order.id
                     }
                 }
-                self.orderToModifyOrDelete = OrderStruct.empty
-            }else{
-                self.errorMessage = error?.localizedDescription
-                self.orderToModifyOrDelete = OrderStruct.empty
+                self.fetchAndMap()
             }
         }
     }
-    func updateData(){
-        do{
-            try db.collection("ordine").document(orderToModifyOrDelete.id ?? "").setData(from: orderToModifyOrDelete, merge: true)
-            self.fetchAndMap()
-            orderToModifyOrDelete = OrderStruct.empty
-        }catch {
-            errorMessage = error?.localizedDescription
-            orderToModifyOrDelete = OrderStruct.empty
+    func updateData(itemToUpdate: OrderStruct){
+        if let id = itemToUpdate.id {
+            let docRef = db.collection("ordine").document(id)
+            do {
+                try docRef.setData(from: itemToUpdate)
+                self.fetchAndMap()
+            }
+            catch {
+                print(error)
+            }
+
+        }
+    }
+    func addFood(id : String, food : [Food]){
+        var ordine = OrderStruct.empty
+        var temp = [Food]()
+        var def = [Food]()
+        
+        db.collection("ordine").document(id).getDocument { (document, error) in
+            if let error = error {
+                print("Error getting documents: \(error)")
+            } else {
+                do {
+                    ordine = try document?.data(as: OrderStruct.self) ?? OrderStruct.empty
+
+                    temp = food.filter { f in
+                        for o in ordine.orderFood {
+                            if f.foodName == o.foodName && f.foodVariants.filter({ $0.variantChecked == false }) == o.foodVariants.filter({ $0.variantChecked == false }) && f.foodPrice == o.foodPrice && f.foodReversed == o.foodReversed && f.foodPortata == o.foodPortata {
+                                return true
+                            }
+                            return false
+                        }
+                        return false
+                    }
+                    
+                    def = ordine.orderFood.map { v in
+                        for t in temp {
+                            if t.foodName == v.foodName && t.foodVariants.filter({ $0.variantChecked == false }) == v.foodVariants.filter({ $0.variantChecked == false }) && t.foodPrice == v.foodPrice && v.foodReversed == t.foodReversed && v.foodPortata == t.foodPortata {
+                                                                
+                                return Food(foodVariants: v.foodVariants, foodName: v.foodName, foodIva: v.foodIva, foodPortata: v.foodPortata, foodReversed: v.foodReversed, foodPrice: v.foodPrice, foodQuantity: v.foodQuantity + t.foodQuantity)
+                            }else {
+                                return v
+                            }
+                        }
+                        return v
+                    }
+                    temp = food.filter { f in
+                        for o in ordine.orderFood {
+                            if f.foodName == o.foodName && f.foodVariants.filter({ $0.variantChecked == false }) == o.foodVariants.filter({ $0.variantChecked == false }) && f.foodPrice == o.foodPrice && f.foodReversed == o.foodReversed && f.foodPortata == o.foodPortata {
+                                return false
+                            }
+                            return true
+                        }
+                        return false
+                    }
+                    
+                    def.append(contentsOf: temp)
+                    
+                    let finale = OrderStruct(id: ordine.id, userRestaurantID: ordine.userRestaurantID, orderFood: def, orderTime: ordine.orderTime, orderTotalPrice: ordine.orderTotalPrice, orderTable: ordine.orderTable, orderSenderID: ordine.orderSenderID)
+                    
+                    let totale = self.totalAmount(ordine: finale)
+                    self.updateData(itemToUpdate: OrderStruct(id: finale.id, userRestaurantID: finale.userRestaurantID, orderFood: finale.orderFood, orderTime: finale.orderTime, orderTotalPrice: totale, orderTable: finale.orderTable, orderSenderID: finale.orderSenderID))
+                    
+                } catch {
+                    self.errorMessage = String(error.localizedDescription)
+                }
+            }
         }
     }
 }
 
 extension OrderViewModel {
+
     func filterOrderbyTable(tavolo: String) -> OrderStruct{
         var cibo = [Food]()
         for list in self.orderList {
             if list.orderTable == tavolo {
                 for food in list.orderFood {
-                    cibo.append(Food(foodVariants: food.foodVariants, foodName: food.foodName, foodPortata: food.foodPortata, foodReversed: food.foodReversed, foodPrice: food.foodPrice, foodQuantity: food.foodQuantity))
+                    cibo.append(Food(foodVariants: food.foodVariants, foodName: food.foodName, foodIva: food.foodIva, foodPortata: food.foodPortata, foodReversed: food.foodReversed, foodPrice: food.foodPrice, foodQuantity: food.foodQuantity))
                 }
-                return OrderStruct(orderFood: cibo, orderTime: list.orderTime, orderTotalPrice: list.orderTotalPrice, orderTable: list.orderTable, orderSenderID: list.orderSenderID)
+                return OrderStruct(userRestaurantID: list.userRestaurantID, orderFood: cibo, orderTime: list.orderTime, orderTotalPrice: list.orderTotalPrice, orderTable: list.orderTable, orderSenderID: list.orderSenderID)
             }
         }
         return ordineVuoto
     }
     func filterSearch(searchText: String) -> [OrderStruct] {
         if searchText.isEmpty {
-            return ordersList
+            return orderList
         } else {
-            return ordersList.filter { $0.table.localizedCaseInsensitiveContains(searchText)}
+            return orderList.filter { $0.orderTable.localizedCaseInsensitiveContains(searchText)}
         }
     }
 }
@@ -136,8 +195,8 @@ extension OrderViewModel {
     func totalAmount(ordine : OrderStruct) -> Double{
         var total : Double = 0
         
-        for food in ordine.food {
-            if !food.foodStornato {
+        for food in ordine.orderFood {
+            if !food.foodReversed {
                 total += (food.foodPrice * food.foodQuantity)
             }
         }
@@ -146,101 +205,100 @@ extension OrderViewModel {
     
     func DoubleProducts(prodotto : ProductsStruct, quantity : Double) -> [Food] {
         if selectedOption == "Tavolo" {
-            let ord = ordineTavolo.food.map { food in
-                food.foodName == prodotto.nome && !food.foodStornato && food.variants.filter({ $0.variantChecked == true }) == prodotto.variants.filter({ $0.variantChecked == true }) ?
-                Food(variants: food.variants, foodName: food.foodName, foodPortata: food.foodPortata, foodStornato: food.foodStornato, foodPrice: food.foodPrice, foodQuantity: food.foodQuantity + quantity) : Food(variants: food.variants, foodName: food.foodName, foodPortata: food.foodPortata, foodStornato: food.foodStornato, foodPrice: food.foodPrice, foodQuantity: food.foodQuantity)
+            let ord = ordineTavolo.orderFood.map { food in
+                food.foodName == prodotto.productName && !food.foodReversed && food.foodVariants.filter({ $0.variantChecked == true }) == prodotto.productVariants.filter({ $0.variantChecked == true }) ?
+                Food(foodVariants: food.foodVariants, foodName: food.foodName, foodIva: food.foodIva, foodPortata: food.foodPortata, foodReversed: food.foodReversed, foodPrice: food.foodPrice, foodQuantity: food.foodQuantity + quantity) : Food(foodVariants: food.foodVariants, foodName: food.foodName, foodIva: food.foodIva, foodPortata: food.foodPortata, foodReversed: food.foodReversed, foodPrice: food.foodPrice, foodQuantity: food.foodQuantity)
             }
             return ord
         } else {
-            let ord = ordineVuoto.food.map { food in
-                food.foodName == prodotto.nome && !food.foodStornato && food.variants.filter({ $0.variantChecked == true }) == prodotto.variants.filter({ $0.variantChecked == true }) ? Food(variants: food.variants, foodName: food.foodName, foodPortata: food.foodPortata, foodStornato: food.foodStornato, foodPrice: food.foodPrice, foodQuantity: food.foodQuantity + quantity) : Food(variants: food.variants, foodName: food.foodName, foodPortata: food.foodPortata, foodStornato: food.foodStornato, foodPrice: food.foodPrice, foodQuantity: food.foodQuantity)
+            let ord = ordineVuoto.orderFood.map { food in
+                food.foodName == prodotto.productName && !food.foodReversed && food.foodVariants.filter({ $0.variantChecked == true }) == prodotto.productVariants.filter({ $0.variantChecked == true }) ? Food(foodVariants: food.foodVariants, foodName: food.foodName, foodIva: food.foodIva, foodPortata: food.foodPortata, foodReversed: food.foodReversed, foodPrice: food.foodPrice, foodQuantity: food.foodQuantity + quantity) : Food(foodVariants: food.foodVariants, foodName: food.foodName, foodIva: food.foodIva, foodPortata: food.foodPortata, foodReversed: food.foodReversed, foodPrice: food.foodPrice, foodQuantity: food.foodQuantity)
             }
             return ord
         }
     }
+    
     func checkDoubleProducts(prodotto : ProductsStruct) -> Bool {
         var ord = false
         if selectedOption == "Tavolo" {
-            for food in ordineTavolo.food {
-                if food.foodName == prodotto.nome && !food.foodStornato && food.variants.filter({ $0.variantChecked == true }) == prodotto.variants.filter({ $0.variantChecked == true }) {
+            for food in ordineTavolo.orderFood {
+                if food.foodName == prodotto.productName && !food.foodReversed && food.foodVariants.filter({ $0.variantChecked == true }) == prodotto.productVariants.filter({ $0.variantChecked == true }) {
                     ord = true
                 }
             }
             return ord
         } else {
-            for food in ordineVuoto.food {
-                if food.foodName == prodotto.nome && !food.foodStornato && food.variants.filter({ $0.variantChecked == true }) == prodotto.variants.filter({ $0.variantChecked == true }) {
+            for food in ordineVuoto.orderFood {
+                if food.foodName == prodotto.productName && !food.foodReversed && food.foodVariants.filter({ $0.variantChecked == true }) == prodotto.productVariants.filter({ $0.variantChecked == true }) {
                     ord = true
                 }
             }
             return ord
         }
     }
-
+    
     func modifyFood(exValore : Food) -> [Food] {
         var ord = [Food]()
         if selectedOption == "Tavolo" {
-
-            if ordineTavolo.food.contains(exValore){
+            if ordineTavolo.orderFood.contains(exValore){
                 //contiene exvalore
-                ordineTavolo.food.removeAll { food in
+                ordineTavolo.orderFood.removeAll { food in
                     food == exValore
                 }
                 //exvalore eliminato
-                if ordineTavolo.food.contains(where: { food in
-                    food.foodName == prodottoModify.foodName && !food.foodStornato && food.variants.filter({ $0.variantChecked == true }) == prodottoModify.variants.filter({ $0.variantChecked == true })}) {
-
-                    ord = ordineTavolo.food.map { food in
-                        food.foodName == prodottoModify.foodName && !food.foodStornato && food.variants.filter({ $0.variantChecked == true }) == prodottoModify.variants.filter({ $0.variantChecked == true })
-                        ? Food(variants: food.variants, foodName: food.foodName, foodPortata: food.foodPortata, foodStornato: food.foodStornato, foodPrice: food.foodPrice, foodQuantity: food.foodQuantity + prodottoModify.foodQuantity)
-                        : Food(variants: food.variants, foodName: food.foodName, foodPortata: food.foodPortata, foodStornato: food.foodStornato, foodPrice: food.foodPrice, foodQuantity: food.foodQuantity)
+                if ordineTavolo.orderFood.contains(where: { food in
+                    food.foodName == prodottoModify.foodName && !food.foodReversed && food.foodVariants.filter({ $0.variantChecked == true }) == prodottoModify.foodVariants.filter({ $0.variantChecked == true })}) {
+                    
+                    ord = ordineTavolo.orderFood.map { food in
+                        food.foodName == prodottoModify.foodName && !food.foodReversed && food.foodVariants.filter({ $0.variantChecked == true }) == prodottoModify.foodVariants.filter({ $0.variantChecked == true })
+                        ? Food(foodVariants: food.foodVariants, foodName: food.foodName, foodIva: food.foodIva, foodPortata: food.foodPortata, foodReversed: food.foodReversed, foodPrice: food.foodPrice, foodQuantity: food.foodQuantity + prodottoModify.foodQuantity)
+                        : Food(foodVariants: food.foodVariants, foodName: food.foodName, foodIva: food.foodIva, foodPortata: food.foodPortata, foodReversed: food.foodReversed, foodPrice: food.foodPrice, foodQuantity: food.foodQuantity)
                     }
                     //mapping dell'array
-
+                    
                     return ord
                 }else {
-                    ordineTavolo.food.append(prodottoModify)
+                    ordineTavolo.orderFood.append(prodottoModify)
                     //aggiunta del valore nuovo
-                    return ordineTavolo.food
+                    return ordineTavolo.orderFood
                 }
             }
             //caso non accettato nell'ordine vuoto
             return ord
         }else {
-            if ordineVuoto.food.contains(exValore){
+            if ordineVuoto.orderFood.contains(exValore){
                 //contiene exvalore
-                ordineVuoto.food.removeAll { food in
+                ordineVuoto.orderFood.removeAll { food in
                     food == exValore
                 }
                 //exvalore eliminato
-                if ordineVuoto.food.contains(where: { food in
-                    food.foodName == prodottoModify.foodName && !food.foodStornato && food.variants.filter({ $0.variantChecked == true }) == prodottoModify.variants.filter({ $0.variantChecked == true })}) {
-
-                    ord = ordineVuoto.food.map { food in
-                        food.foodName == prodottoModify.foodName && !food.foodStornato && food.variants.filter({ $0.variantChecked == true }) == prodottoModify.variants.filter({ $0.variantChecked == true })
-                        ? Food(variants: food.variants, foodName: food.foodName, foodPortata: food.foodPortata, foodStornato: food.foodStornato, foodPrice: food.foodPrice, foodQuantity: food.foodQuantity + prodottoModify.foodQuantity)
-                        : Food(variants: food.variants, foodName: food.foodName, foodPortata: food.foodPortata, foodStornato: food.foodStornato, foodPrice: food.foodPrice, foodQuantity: food.foodQuantity)
+                if ordineVuoto.orderFood.contains(where: { food in
+                    food.foodName == prodottoModify.foodName && !food.foodReversed && food.foodVariants.filter({ $0.variantChecked == true }) == prodottoModify.foodVariants.filter({ $0.variantChecked == true })}) {
+                    
+                    ord = ordineVuoto.orderFood.map { food in
+                        food.foodName == prodottoModify.foodName && !food.foodReversed && food.foodVariants.filter({ $0.variantChecked == true }) == prodottoModify.foodVariants.filter({ $0.variantChecked == true })
+                        ? Food(foodVariants: food.foodVariants, foodName: food.foodName, foodIva: food.foodIva, foodPortata: food.foodPortata, foodReversed: food.foodReversed, foodPrice: food.foodPrice, foodQuantity: food.foodQuantity + prodottoModify.foodQuantity)
+                        : Food(foodVariants: food.foodVariants, foodName: food.foodName, foodIva: food.foodIva, foodPortata: food.foodPortata, foodReversed: food.foodReversed, foodPrice: food.foodPrice, foodQuantity: food.foodQuantity)
                     }
                     //mapping dell'array
-
+                    
                     return ord
                 }else {
-                    ordineVuoto.food.append(prodottoModify)
+                    ordineVuoto.orderFood.append(prodottoModify)
                     //aggiunta del valore nuovo
-                    return ordineVuoto.food
+                    return ordineVuoto.orderFood
                 }
             }
             //caso non accettato nell'ordine vuoto
             return ord
         }
     }
-
     var biggestNumber: Int? {
         let searchNumber = 0
-        let filtered = ordersList.filter { item in
+        let filtered = orderList.filter { item in
             // Check if item contains searchString and a number greater than or equal to searchNumber
-            if item.table.contains(selectedOption) {
-                let components = item.table.components(separatedBy: .whitespaces)
+            if item.orderTable.contains(selectedOption) {
+                let components = item.orderTable.components(separatedBy: .whitespaces)
                 for component in components {
                     if let number = Int(component), number >= searchNumber {
                         return true
@@ -252,7 +310,7 @@ extension OrderViewModel {
         
         // Find the biggest number in the filtered array
         let numbers = filtered.compactMap { item -> Int? in
-            let components = item.table.components(separatedBy: .whitespaces)
+            let components = item.orderTable.components(separatedBy: .whitespaces)
             for component in components {
                 if let number = Int(component) {
                     return number
@@ -264,11 +322,11 @@ extension OrderViewModel {
     }
     func checkContainsOptions(ordine : OrderStruct) -> Bool {
         for option in options {
-            if ordine.table.contains(option){
+            if ordine.orderTable.contains(option){
                 return true
             }
         }
         return false
     }
-
+    
 }

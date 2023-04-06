@@ -25,27 +25,25 @@ struct easymanagerApp: App {
     
     @StateObject var restaurant = RestaurantViewModel()
     @StateObject var auth = AuthenticationViewModel()
-    @StateObject var table = TableViewModel()
-    @StateObject var warehouse = WarehouseViewModel()
     @StateObject var order = OrderViewModel()
     @StateObject var product = ProductViewModel()
-    @StateObject var booking = BookingViewModel()
-
+    @StateObject var printer = PrinterViewModel()
+    @StateObject var table = TableViewModel()
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .environmentObject(auth)
-                .environmentObject(table)
-                .environmentObject(warehouse)
-                .environmentObject(restaurant)
-                .environmentObject(order)
-                .environmentObject(product)
-                .environmentObject(booking)
                 .environmentObject(DataSource())
                 .environmentObject(csManager)
                 .onAppear{
                     csManager.applyColorScheme()
                 }
+                .environmentObject(auth)
+                .environmentObject(table)
+                .environmentObject(restaurant)
+                .environmentObject(printer)
+                .environmentObject(order)
+                .environmentObject(product)
         }
     }
 }

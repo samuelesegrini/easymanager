@@ -10,27 +10,69 @@ import Firebase
 import FirebaseFirestoreSwift
 
 class ProductViewModel: ObservableObject, Identifiable {
+    @Published var categoryList = [CategoryStruct]()
     @Published var productList = [ProductsStruct]()
     
     let db = Firestore.firestore()
     @Published var errorMessage: String?
-    private var listenerRegistration: ListenerRegistration?
+    private var listenerRegistrationProd: ListenerRegistration?
+    private var listenerRegistrationCate: ListenerRegistration?
     
     init() {
-        fetchAndMap()
+        fetchAndMapProduct()
+        fetchAndMapCategory()
     }
     
     //TODO: create single variable per single input and update adddata
     @Published var productToModifyOrDelete = ProductsStruct.empty
+    @Published var categoryToModifyOrDelete = CategoryStruct.empty
     
     @Published var menuChoice = "Listino pranzo"
     @Published var copiaProdotto = ProductsStruct.empty
 }
 
 extension ProductViewModel {
-    func fetchAndMap() {
-        if listenerRegistration == nil {
-            listenerRegistration = db.collection("prodotto")
+    func fetchAndMapCategory() {
+        if listenerRegistrationCate == nil {
+            listenerRegistrationCate = db.collection("categoria")
+                .addSnapshotListener { [weak self] (querySnapshot, error) in
+                    guard let documents = querySnapshot?.documents else {
+                        self?.errorMessage = "No documents in 'categoria' collection"
+                        return
+                    }
+                    DispatchQueue.main.async {
+                        self?.categoryList = documents.compactMap { queryDocumentSnapshot in
+                            let result = Result { try queryDocumentSnapshot.data(as: CategoryStruct.self) }
+                            switch result {
+                            case .success(let list):
+                                // A CategoryStruct value was successfully initialized from the DocumentSnapshot.
+                                self?.errorMessage = nil
+                                
+                                return list
+                            case .failure(let error):
+                                // A CategoryStruct value could not be initialized from the DocumentSnapshot.
+                                switch error {
+                                case DecodingError.typeMismatch(_, let context):
+                                    self?.errorMessage = "\(error.localizedDescription): \(context.debugDescription)"
+                                case DecodingError.valueNotFound(_, let context):
+                                    self?.errorMessage = "\(error.localizedDescription): \(context.debugDescription)"
+                                case DecodingError.keyNotFound(_, let context):
+                                    self?.errorMessage = "\(error.localizedDescription): \(context.debugDescription)"
+                                case DecodingError.dataCorrupted(let key):
+                                    self?.errorMessage = "\(error.localizedDescription): \(key)"
+                                default:
+                                    self?.errorMessage = "Error decoding document: \(error.localizedDescription)"
+                                }
+                                return nil
+                            }
+                        }
+                    }
+                }
+        }
+    }
+    func fetchAndMapProduct() {
+        if listenerRegistrationProd == nil {
+            listenerRegistrationProd = db.collection("prodotto")
                 .addSnapshotListener { [weak self] (querySnapshot, error) in
                     guard let documents = querySnapshot?.documents else {
                         self?.errorMessage = "No documents in 'prodotto' collection"
@@ -44,9 +86,6 @@ extension ProductViewModel {
                                 // A ProductStruct value was successfully initialized from the DocumentSnapshot.
                                 self?.errorMessage = nil
                                 
-                                if list.id == "prova" || list.userRestaurantID == ""{
-                                    return nil
-                                }
                                 return list
                             case .failure(let error):
                                 // A ProductStruct value could not be initialized from the DocumentSnapshot.
@@ -72,7 +111,7 @@ extension ProductViewModel {
     func addData(){
         do{
             try db.collection("prodotto").addDocument(from: productToModifyOrDelete)
-            self.fetchAndMap()
+            self.fetchAndMapProduct()
             errorMessage = ""
             productToModifyOrDelete = ProductsStruct.empty
         }catch{
@@ -96,8 +135,8 @@ extension ProductViewModel {
     }
     func updateData(){
         do{
-            try db.collection("ordine").document(productToModifyOrDelete.id ?? "").setData(from: productToModifyOrDelete, merge: true)
-            self.fetchAndMap()
+            try db.collection("prodotto").document(productToModifyOrDelete.id ?? "").setData(from: productToModifyOrDelete, merge: true)
+            self.fetchAndMapProduct()
             productToModifyOrDelete = ProductsStruct.empty
         }catch {
             errorMessage = error.localizedDescription
@@ -134,5 +173,33 @@ extension ProductViewModel {
         total += (prodotto.productPrice)
         
         return total
+    }
+}
+
+extension ProductViewModel {
+    func addCategory(){
+        do{
+            try db.collection("categoria").addDocument(from: categoryToModifyOrDelete)
+            self.fetchAndMapCategory()
+            errorMessage = ""
+            categoryToModifyOrDelete = CategoryStruct.empty
+        }catch{
+            errorMessage = error.localizedDescription
+        }
+    }
+    func deleteCategory(){
+        db.collection("categoria").document(categoryToModifyOrDelete.id ?? "").delete() { error in
+            if error == nil {
+                DispatchQueue.main.async {
+                    self.categoryList.removeAll{ categ in
+                        return categ.id == self.categoryToModifyOrDelete.id
+                    }
+                }
+                self.categoryToModifyOrDelete = CategoryStruct.empty
+            }else{
+                self.errorMessage = error?.localizedDescription
+                self.categoryToModifyOrDelete = CategoryStruct.empty
+            }
+        }
     }
 }

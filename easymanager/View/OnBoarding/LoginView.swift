@@ -25,6 +25,7 @@ struct LoginView: View {
                 HStack {
                     Image(systemName: "at")
                     TextField("Email", text: $auth.email)
+                        .keyboardType(.emailAddress)
                         .textInputAutocapitalization(.never)
                         .disableAutocorrection(true)
                         .submitLabel(.next)
@@ -35,6 +36,7 @@ struct LoginView: View {
                     Image(systemName: "lock")
                     SecureField("Password", text: $auth.password)
                         .submitLabel(.go)
+                        .keyboardType(.default)
                         .onSubmit {
                             LogIn()
                         }
@@ -54,10 +56,8 @@ struct LoginView: View {
                 Text(auth.errorMessage ?? "").foregroundColor(.red)
             }
             Button {
+                LogIn()
                 showErrorMessage = true
-                if auth.errorMessage == "" {
-                    LogIn()
-                }
             } label: {
                 ZStack{
                     RoundedRectangle(cornerRadius: 15)
@@ -67,7 +67,6 @@ struct LoginView: View {
             }
             .frame(height: 60)
             .padding(.horizontal)
-            Text(auth.user?.email ?? "non so")
         }
         .navigationTitle("Accedi al tuo Account")
         .toolbar {

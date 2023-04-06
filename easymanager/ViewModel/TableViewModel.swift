@@ -11,15 +11,17 @@ import FirebaseFirestoreSwift
 
 class TableViewModel: ObservableObject, Identifiable {
     @Published var tableList = [TableStruct]()
-    
+    @Published var copertoList = [CopertoStruct]()
+        
     let db = Firestore.firestore()
     @Published var errorMessage: String?
     private var listenerRegistration: ListenerRegistration?
+    private var listenerCoperto: ListenerRegistration?
     
-    init() {
+    init(){
         fetchAndMap()
+        fetchCoperto()
     }
-    
     @Published var tableName = ""
     @Published var tableSeats = 0
     @Published var tableStatus = ""
@@ -28,6 +30,44 @@ class TableViewModel: ObservableObject, Identifiable {
 }
 
 extension TableViewModel {
+    func fetchCoperto(){
+        if listenerCoperto == nil {
+            listenerCoperto = db.collection("coperto")
+                .addSnapshotListener { [weak self] (querySnapshot, error) in
+                    guard let documents = querySnapshot?.documents else {
+                        self?.errorMessage = "No documents in 'coperto' collection"
+                        return
+                    }
+                    DispatchQueue.main.async {
+                        self?.copertoList = documents.compactMap { queryDocumentSnapshot in
+                            let result = Result { try queryDocumentSnapshot.data(as: CopertoStruct.self) }
+                            switch result {
+                            case .success(let list):
+                                // A CopertoStruct value was successfully initialized from the DocumentSnapshot.
+                                self?.errorMessage = nil
+                            
+                                return list
+                            case .failure(let error):
+                                // A CopertoStruct value could not be initialized from the DocumentSnapshot.
+                                switch error {
+                                case DecodingError.typeMismatch(_, let context):
+                                    self?.errorMessage = "\(error.localizedDescription): \(context.debugDescription)"
+                                case DecodingError.valueNotFound(_, let context):
+                                    self?.errorMessage = "\(error.localizedDescription): \(context.debugDescription)"
+                                case DecodingError.keyNotFound(_, let context):
+                                    self?.errorMessage = "\(error.localizedDescription): \(context.debugDescription)"
+                                case DecodingError.dataCorrupted(let key):
+                                    self?.errorMessage = "\(error.localizedDescription): \(key)"
+                                default:
+                                    self?.errorMessage = "Error decoding document: \(error.localizedDescription)"
+                                }
+                                return nil
+                            }
+                        }
+                    }
+                }
+        }
+    }
     func fetchAndMap() {
         if listenerRegistration == nil {
             listenerRegistration = db.collection("tavolo")
@@ -44,10 +84,7 @@ extension TableViewModel {
                             case .success(let list):
                                 // A TableStruct value was successfully initialized from the DocumentSnapshot.
                                 self?.errorMessage = nil
-                                
-                                if list.id == "prova"{
-                                    return nil
-                                }
+                            
                                 return list
                             case .failure(let error):
                                 // A TableStruct value could not be initialized from the DocumentSnapshot.
@@ -96,14 +133,12 @@ extension TableViewModel {
             }
         }
     }
-    func updateData(){
+    func updateData(table : TableStruct){
         do{
-            try db.collection("tavolo").document(tableToModifyOrDelete.id ?? "").setData(from: tableToModifyOrDelete, merge: true)
+            try db.collection("tavolo").document(table.id ?? "").setData(from: table, merge: true)
             self.fetchAndMap()
-            tableToModifyOrDelete = TableStruct.empty
         }catch {
             errorMessage = error.localizedDescription
-            tableToModifyOrDelete = TableStruct.empty
         }
     }
 }
@@ -112,13 +147,13 @@ extension TableViewModel {
     func filterStatus(filter: TableStatusEnum) -> [TableStruct] {
         switch filter {
         case .occupied:
-            return tableList.filter { $0.tableStatus == TableStatusEnum.occupied.rawValue}
+            return tableList.filter { $0.tableStatus == "Occupato"}
         case .free:
-            return tableList.filter { $0.tableStatus == TableStatusEnum.free.rawValue}
+            return tableList.filter { $0.tableStatus == "Libero"}
         case .booked:
-            return tableList.filter { $0.tableStatus == TableStatusEnum.booked.rawValue}
+            return tableList.filter { $0.tableStatus == "Prenotato"}
         case .waiting:
-            return tableList.filter { $0.tableStatus == TableStatusEnum.waiting.rawValue}
+            return tableList.filter { $0.tableStatus == "In Attesa"}
         }
     }
 }

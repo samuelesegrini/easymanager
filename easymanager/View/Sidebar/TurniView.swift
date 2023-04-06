@@ -9,6 +9,7 @@ import SwiftUI
 
 struct TurniView: View {
     @EnvironmentObject var auth : AuthenticationViewModel
+    
     @State private var searchText = ""
     
     var body: some View {

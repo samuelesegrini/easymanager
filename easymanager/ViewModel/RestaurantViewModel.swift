@@ -11,8 +11,6 @@ import Firebase
 import FirebaseFirestoreSwift
 
 class RestaurantViewModel : ObservableObject {
-    //@AppStorage("restaurantID_STRING") var userRestaurantID = ""
-
     @Published var restaurantCurrent = RestaurantStruct.empty
     
     @Published var restaurantName = ""
@@ -64,10 +62,9 @@ extension RestaurantViewModel {
                                 // A Orders value was successfully initialized from the DocumentSnapshot.
                                 self?.errorMessage = nil
                                 
-                                /*if list.restaurantName == self?.restaurantName && list.restaurantIva == self?.restaurantIva{
+                                if list.id == "N1VqnVlgKcc1B7MuFBM0"{
                                     self?.restaurantCurrent = list
-                                    self?.userRestaurantID = self?.restaurantCurrent.id ?? ""
-                                }*/
+                                }
                                 if list.id == "prova" {
                                     return nil
                                 }

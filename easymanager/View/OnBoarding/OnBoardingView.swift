@@ -13,7 +13,7 @@ struct OnBoardingView: View {
     @EnvironmentObject var restaurant : RestaurantViewModel
     
     //Variable that handles the selection of pages
-    @State private var selection = 1
+    @State private var selection = 6
     
     //Variable that signals if the partita IVA number is valid (Max. 11 digits)
     @State private var isNumberValid = true
@@ -51,7 +51,8 @@ struct OnBoardingView: View {
             NavigationStack{
                 //TabView for the show of pages
                 TabView(selection: $selection){
-                    WelcomePage()
+                //TODO: Implementing other pages of OnBoarding
+                    /*WelcomePage()
                         .tag(1)
                         .frame(maxWidth: 500, maxHeight: 800)
                         .padding()
@@ -62,7 +63,7 @@ struct OnBoardingView: View {
                     InfoTitolare()
                         .tag(3)
                         .frame(maxWidth: 500, maxHeight: 800)
-                        .padding()
+                        .padding()*/
                     DipendenteSubView()
                         .tag(6)
                         .frame(maxWidth: 500, maxHeight: 800)
@@ -109,7 +110,7 @@ struct OnBoardingView: View {
             }
             .frame(height: 60)
             .padding(.horizontal)
-            
+
             //Back to the initial page of admin account creation (titolare)
             Button {
                 selection = 1
@@ -420,6 +421,7 @@ struct OnBoardingView: View {
         }
         .background(Color(UIColor.systemGroupedBackground))
         .navigationTitle("Aggiungi Sede")
+        .navigationBarTitleDisplayMode(.automatic)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing){
                 Button {
@@ -596,6 +598,8 @@ struct OnBoardingView: View {
                             Image(systemName: "lock")
                             SecureField("Conferma Password", text: $auth.confirmPassword)
                         }
+                        Text("\(restaurant.restaurantCurrent.id ?? "")")
+
                     }
                     .padding()
                     .background(Color(UIColor.quaternarySystemFill))
@@ -633,8 +637,7 @@ struct OnBoardingView: View {
     }
     func SignUp() {
         Task {
-            auth.restaurantID = ""//restaurant.userRestaurantID
-
+            //auth.restaurantID = restaurant.restaurantCurrent.id ?? ""
             if await auth.signUpWithEmailPassword() == true {
                 auth.authenticationState = .authenticated
             }

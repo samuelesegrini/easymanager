@@ -9,20 +9,25 @@ import SwiftUI
 
 struct SideBarView: View {
     @EnvironmentObject var auth: AuthenticationViewModel
-    
-    @State private var presentingProfileScreen = false
-    
+        
     var body: some View {
         VStack{
             List{
+                if auth.utente.userRoles.contains("cucina"){
+                    Section {
+                        NavigationButton(title: "POS", imageName: "cooktop", color: .blue, nextView: CookingView())
+
+                    }header: {
+                        Text("Gestione Cucina")
+                    }
+                }
+                    
                 if !auth.utente.userRoles.filter({ $0 == "pos"}).isEmpty {
                     Section {
                         NavigationButton(title: "POS", imageName: "wallet.pass", color: .orange, nextView: CashDesk())
 
                     }header: {
                         Text("Cassa Ristorante")
-                    }footer: {
-                        Text("Descrizione funzioni")
                     }
                     
                 }else if !auth.utente.userRoles.filter({$0 == "cameriere"}).isEmpty {
@@ -31,28 +36,19 @@ struct SideBarView: View {
                         
                     }header: {
                         Text("Fai un Ordine")
-                    }footer: {
-                        Text("Descrizione Funzioni")
                     }
                 }
                 Section {
                     NavigationButton(title: "Tavoli", imageName: "table.furniture", color: .purple, nextView: DiningView())
     
-                    NavigationButton(title: "Prenotazioni", imageName: "book", color: .red, nextView: BookingView())
                 }header: {
                     Text("Sala")
-                }footer: {
-                    Text("Descrizione funzioni")
                 }
                 Section {
-                    NavigationButton(title: "Inventario", imageName: "shippingbox", color: .blue, nextView: WarehouseView())
-
                     NavigationButton(title: "\(auth.utente.userName) \(auth.utente.userSurname)", imageName: "person.and.background.dotted", color: .green, nextView: ProfileView())
 
                 } header: {
                     Text("Gestione Ristorante")
-                }footer: {
-                    Text("Descrizione funzioni")
                 }
             }
             .listStyle(.insetGrouped)

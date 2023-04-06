@@ -8,10 +8,10 @@
 import Foundation
 import FirebaseFirestoreSwift
 
-struct OrderStruct : Codable, Identifiable {
+struct OrderStruct : Codable, Identifiable, Hashable {
     @DocumentID var id : String?
     
-    var userRestaurantID : String
+    var userRestaurantID = "N1VqnVlgKcc1B7MuFBM0"
 
     var orderFood : [Food]
     var orderTime: Date
@@ -21,19 +21,20 @@ struct OrderStruct : Codable, Identifiable {
 }
 
 extension OrderStruct {
-    static let empty = OrderStruct(userRestaurantID: "", orderFood: [], orderTime: Date(), orderTotalPrice: 0, orderTable: "", orderSenderID: "")
+    static let empty = OrderStruct(userRestaurantID: "N1VqnVlgKcc1B7MuFBM0", orderFood: [], orderTime: Date(), orderTotalPrice: 0, orderTable: "", orderSenderID: "")
 }
 
 struct Food: Codable, Hashable  {
     var foodVariants : [Variants]
     var foodName: String
+    var foodIva: String
     var foodPortata : Int
     var foodReversed: Bool
     var foodPrice: Double
     var foodQuantity: Double
 }
 extension Food {
-    static let empty = Food(foodVariants: [], foodName: "", foodPortata: 0, foodReversed: false, foodPrice: 0, foodQuantity: 0)
+    static let empty = Food(foodVariants: [], foodName: "", foodIva: "", foodPortata: 0, foodReversed: false, foodPrice: 0, foodQuantity: 0)
 }
 
 struct Variants: Codable, Hashable  {

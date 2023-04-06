@@ -47,10 +47,20 @@ struct WrapperView: View {
             }
         }else {
             TabView {
+                if auth.utente.userRoles.contains("cucina"){
+                    CookingView()
+                        .tabItem {
+                            Label("Cucina", systemImage: "cooktop")
+                        }
+                }
                 if !auth.utente.userRoles.filter({$0 == "pos"}).isEmpty {
                     CashDesk()
                         .tabItem {
                             Label("POS", systemImage: "wallet.pass")
+                        }
+                    DiningView()
+                        .tabItem {
+                            Label("Tavoli", systemImage: "table.furniture")
                         }
                 }else if !auth.utente.userRoles.filter({$0 == "cameriere"}).isEmpty {
                     OrdersView()
@@ -58,18 +68,6 @@ struct WrapperView: View {
                             Label("Ordina", systemImage: "fork.knife")
                         }
                 }
-                DiningView()
-                    .tabItem {
-                        Label("Tavoli", systemImage: "table.furniture")
-                    }
-                BookingView()
-                    .tabItem {
-                        Label("Prenotazioni", systemImage: "book")
-                    }
-                WarehouseView()
-                    .tabItem {
-                        Label("Magazzino", systemImage: "shippingbox")
-                    }
                 ProfileView()
                     .tabItem{
                         Label("Profilo", systemImage: "person.crop.circle")

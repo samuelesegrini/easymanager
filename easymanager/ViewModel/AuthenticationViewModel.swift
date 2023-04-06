@@ -10,6 +10,12 @@ import Firebase
 import FirebaseFirestoreSwift
 import FirebaseAuth
 
+
+enum AuthenticationState {
+  case unauthenticated
+  case authenticated
+}
+
 @MainActor
 class AuthenticationViewModel : ObservableObject {
     @Published var name = ""
@@ -21,7 +27,8 @@ class AuthenticationViewModel : ObservableObject {
     @Published var confirmPassword = ""
     
     @Published var user: User?
-    private var tempUser: User?
+    @Published var userToModifyOrDelete = UserStruct.empty
+
     
     @Published var visualizzazioneScontrino = "moderno"
     @Published var staffList = [UserStruct]()
@@ -78,10 +85,14 @@ extension AuthenticationViewModel {
     }
     
     private func saveUserData(userToSave : UserStruct) {
-        let userRef = db.collection("utente").document(userToSave.id ?? "")
         do {
-            try userRef.setData(from: userToSave)
-        } catch {
+            if userToSave.id == "" {
+                try db.collection("utente").addDocument(from: userToSave)
+            } else {
+                try db.collection("utente").document(userToSave.id ?? "").setData(from: userToSave)
+            }
+            errorMessage = ""
+        }catch {
             errorMessage = error.localizedDescription
         }
     }
@@ -128,18 +139,41 @@ extension AuthenticationViewModel {
                 }
         }
     }
+    func addData() {
+        do{
+            try db.collection("utente").addDocument(from: userToModifyOrDelete)
+            self.fetchAndMap()
+            userToModifyOrDelete = UserStruct.empty
+
+        }catch {
+            errorMessage = error.localizedDescription
+            userToModifyOrDelete = UserStruct.empty
+        }
+    }
+    func updateData(){
+        do{
+            try db.collection("utente").document(userToModifyOrDelete.id ?? "").setData(from: userToModifyOrDelete, merge: true)
+            self.fetchAndMap()
+            userToModifyOrDelete = UserStruct.empty
+
+        }catch{
+            errorMessage = error.localizedDescription
+            userToModifyOrDelete = UserStruct.empty
+        }
+    }
 }
 
 extension AuthenticationViewModel {
     func LogInWithEmailPassword() async -> Bool {
+        errorMessage = ""
         do {
-            try await Auth.auth().signIn(withEmail: self.email, password: self.password)
+            try await Auth.auth().signIn(withEmail: email, password: password)
             if utente.userRoles.contains("pos"){
                 self.startTimer()
             }
             errorMessage = ""
             name = ""
-            surname = ""
+            surname = "" 
             email = ""
             roles = [String]()
             password = ""
@@ -156,10 +190,9 @@ extension AuthenticationViewModel {
     }
     func signUpWithEmailPassword() async -> Bool {
         do  {
-            let userToSave = UserStruct(userName: name, userRestaurantID: restaurantID, userSurname: surname, userEmail: email, userRoles: roles)
-            try await Auth.auth().createUser(withEmail: userToSave.userEmail, password: password)
+            try await Auth.auth().createUser(withEmail: userToModifyOrDelete.userEmail, password: password)
             
-            saveUserData(userToSave: UserStruct(id: user?.uid, userName: userToSave.userName, userRestaurantID: userToSave.userRestaurantID, userSurname: userToSave.userSurname, userEmail: userToSave.userEmail, userRoles: userToSave.userRoles))
+            saveUserData(userToSave: UserStruct(id: user?.uid, userName: userToModifyOrDelete.userName, userRestaurantID: userToModifyOrDelete.userRestaurantID, userSurname: userToModifyOrDelete.userSurname, userEmail: userToModifyOrDelete.userEmail, userRoles: userToModifyOrDelete.userRoles, userNOperator: userToModifyOrDelete.userNOperator))
                         
             name = ""
             surname = ""
@@ -170,6 +203,8 @@ extension AuthenticationViewModel {
             errorMessage = ""
             
             restaurantID = ""
+            
+            userToModifyOrDelete = UserStruct.empty
             
             return true
         }
