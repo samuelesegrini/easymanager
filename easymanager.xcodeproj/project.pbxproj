@@ -69,6 +69,7 @@
 		A468957429D9AD4F00328F0F /* OrdersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrdersView.swift; sourceTree = "<group>"; };
 		A468957729D9AD8E00328F0F /* DiningView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiningView.swift; sourceTree = "<group>"; };
 		A468958029D9AE2700328F0F /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
+		A4798F6329E00D9E00B97333 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		A4917B4629DC1EA90021076C /* CategoryManagerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryManagerView.swift; sourceTree = "<group>"; };
 		A49AEAE829D831C20033CFED /* easymanager.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = easymanager.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A49AEAEB29D831C20033CFED /* easymanagerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = easymanagerApp.swift; sourceTree = "<group>"; };
@@ -201,6 +202,7 @@
 		A49AEAEA29D831C20033CFED /* easymanager */ = {
 			isa = PBXGroup;
 			children = (
+				A4798F6329E00D9E00B97333 /* Info.plist */,
 				A49AEAEB29D831C20033CFED /* easymanagerApp.swift */,
 				A49AEB0D29D866770033CFED /* View */,
 				A49AEB4429D870770033CFED /* ViewModel */,
@@ -585,6 +587,7 @@
 				ENABLE_HARDENED_RUNTIME = NO;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = easymanager/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Easy Manager - Gestionale";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.business";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
@@ -627,6 +630,7 @@
 				ENABLE_HARDENED_RUNTIME = NO;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = easymanager/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Easy Manager - Gestionale";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.business";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
