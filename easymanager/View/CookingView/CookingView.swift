@@ -18,6 +18,7 @@ struct CookingView: View {
                 ScrollView(.vertical, showsIndicators: false) {
                     ForEach(order.orderList){ order in
                         SingleOrder(order)
+                            .frame(height: 500)
                     }
                 }
             }else {
@@ -25,6 +26,7 @@ struct CookingView: View {
                     HStack{
                         ForEach(order.orderList){ order in
                             SingleOrder(order)
+                                .frame(minWidth: 400)
                         }
                     }
                 }
@@ -56,7 +58,7 @@ struct CookingView: View {
         }
         .padding(.horizontal)
         .padding(.top)
-        .frame(height: 500)
+
     }
     @ViewBuilder
     func ListProdotti(_ ordine : OrderStruct) -> some View {

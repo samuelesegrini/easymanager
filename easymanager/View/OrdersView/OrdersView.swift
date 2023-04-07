@@ -331,8 +331,7 @@ struct OrdersView: View {
                         }
                         HStack{
                             Picker("Numero Coperti da Inserire", selection: $numeroCop) {
-                                //Need for a non costant range to display current seats avaiable
-                                ForEach(1..<table.tableSeats){ seat in
+                                ForEach(1..<10, id: \.self){ seat in
                                     Text("\(seat)").tag(seat)
                                 }
                             }

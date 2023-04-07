@@ -15,7 +15,7 @@ struct SideBarView: View {
             List{
                 if auth.utente.userRoles.contains("cucina"){
                     Section {
-                        NavigationButton(title: "POS", imageName: "cooktop", color: .blue, nextView: CookingView())
+                        NavigationButton(title: "Cucina", imageName: "cooktop", color: .blue, nextView: CookingView())
 
                     }header: {
                         Text("Gestione Cucina")
