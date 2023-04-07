@@ -19,6 +19,7 @@ struct ProductsManagerView: View {
     @State private var addVariants = false
     @State private var newVariantName = ""
     @State private var ruolo = ""
+    @State private var newIva = ""
     @State private var newVariantPrice = 0.00
     @State private var newVariantDescription = ""
     
@@ -116,6 +117,11 @@ struct ProductsManagerView: View {
                         
                             .keyboardType(.decimalPad)
                             .padding(.horizontal, 50)
+                    }
+                    Picker("IVA", selection: $prod.productIva) {
+                        Text("22 %").tag("22")
+                        Text("10 %").tag("10")
+                        Text("4 %").tag("4")
                     }
                     HStack {
                         Text("Note").bold()

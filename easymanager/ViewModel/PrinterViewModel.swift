@@ -11,7 +11,6 @@ import SwiftUI
 enum ReceiptType: String, CaseIterable {
     case preconto = "Preconto"
     case scontrinoFiscale = "Scontrino Fiscale"
-    case fattura = "Fattura"
 }
 
 class PrinterViewModel : NSObject, ObservableObject {
@@ -172,42 +171,6 @@ class PrinterViewModel : NSObject, ObservableObject {
             }
             xmlString.append("""
                 <endNonFiscal operator=\"\(user.userNOperator)\" />
-                </printerFiscalReceipt>
-                </s:Body>
-                </s:Envelope>
-                """
-            )
-        case .fattura:
-            xmlString = """
-            <?xml version=\"1.0\" encoding=\"utf-8\" ?>
-                <s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\">
-                <s:Body>
-                <printerFiscalReceipt>
-                <beginFiscalReceipt operator=\"\(user.userNOperator)\" />
-            """
-            for food in receipt.orderFood {
-                var department = 1
-                if food.foodIva == "22"{
-                    department = 1
-                }else if food.foodIva == "10"{
-                    department = 2
-                }else if food.foodIva == "4"{
-                    department = 3
-                    
-                    xmlString.append("""
-                                    <printRecItem operator=\"\(user.userNOperator)\" description=\"\(food.foodName)\" quantity=\"\(food.foodQuantity)\" unitPrice=\"\(food.foodPrice)\" department=\"\(department)\"/>
-                                 """
-                    )
-                }
-            }
-            for pay in pagamento{
-                xmlString.append( """
-                                <printRecTotal operator=\"\(user.userNOperator)\" description=\"DA PAGARE\" payment=\"\(pay.pagamentoImporto)\" paymentType=\"\(pay.pagamentoTipo)\" index=\"\(pay.pagamentoTipo == 0 ? 0 : pay.pagamentoTipo == 1 ? 0 : pay.pagamentoTipo == 2 ? 1 : pay.pagamentoTipo == 3 ? 1 : 0)\" />"
-                                """
-                )
-            }
-            xmlString.append("""
-                <endFiscalReceipt operator=\"\(user.userNOperator)\" />
                 </printerFiscalReceipt>
                 </s:Body>
                 </s:Envelope>

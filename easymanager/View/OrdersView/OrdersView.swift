@@ -17,7 +17,7 @@ struct OrdersView: View {
     @State private var showingSheet : TableStruct? = nil
     @State private var showingProduct : ProductsStruct? = nil
     @State private var noteTavolo = ""
-    @State private var coperto = ""
+    @State private var coperto = 0
     @State private var numeroCop = 0
     
     private let adaptiveColumns = [
@@ -255,11 +255,16 @@ struct OrdersView: View {
                             }
                         }.listStyle(.plain)
                         
-                        Text("Ordini Attivi").bold()
+                        Text("Prodotti Ordinati").bold()
                             .padding(.top)
                         HStack{
                             List(order.filterOrderbyTable(tavolo: table.tableName).orderFood, id: \.self){ food in
-                                Text(food.foodName)
+                                HStack{
+                                    Text(food.foodName)
+                                    Spacer()
+                                    Text("x\(food.foodQuantity, format: .number)").foregroundColor(.secondary)
+                                }
+                                .padding(.horizontal)
                             }.listStyle(.plain)
                         }
                         
@@ -325,13 +330,13 @@ struct OrdersView: View {
                         HStack{
                             Picker("Prezzo Coperto", selection: $coperto) {
                                 ForEach(tavolo.copertoList){ cop in
-                                    Text(cop.nomeCoperto).tag(cop.nomeCoperto)
+                                    Text(cop.nomeCoperto).tag(cop.prezzoCoperto)
                                 }
                             }
                         }
                         HStack{
                             Picker("Numero Coperti da Inserire", selection: $numeroCop) {
-                                ForEach(1..<10, id: \.self){ seat in
+                                ForEach(1..<40, id: \.self){ seat in
                                     Text("\(seat)").tag(seat)
                                 }
                             }
@@ -350,6 +355,11 @@ struct OrdersView: View {
                         }.foregroundColor(.green)
                     }
                     .simultaneousGesture(TapGesture().onEnded {
+                        var food = [Food]()
+                        food.append(Food(foodVariants: [], foodName: "Coperto", foodIva: "10", foodPortata: 1, foodReversed: false, foodPrice: Double(coperto), foodQuantity: Double(numeroCop)))
+                        order.orderToModifyOrDelete = OrderStruct( userRestaurantID: "N1VqnVlgKcc1B7MuFBM0", orderFood: food, orderTime: Date(), orderTotalPrice: Double(coperto * numeroCop), orderTable: table.tableName, orderSenderID: auth.utente.id ?? "")
+                        order.addData()
+                        
                         tavolo.updateData(table: TableStruct(id: table.id, userRestaurantID: table.userRestaurantID, waiterID: auth.utente.id ?? "", tableServiceBegin: Date(), tableSeatsOccupied: table.tableSeatsOccupied, tableName: table.tableName, tableSeats: table.tableSeats, tableStatus: "In Attesa"))
                     })
                     .padding()

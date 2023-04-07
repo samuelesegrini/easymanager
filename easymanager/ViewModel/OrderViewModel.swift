@@ -112,53 +112,17 @@ extension OrderViewModel {
     }
     func addFood(id : String, food : [Food]){
         var ordine = OrderStruct.empty
-        var temp = [Food]()
-        var def = [Food]()
-        
         db.collection("ordine").document(id).getDocument { (document, error) in
             if let error = error {
                 print("Error getting documents: \(error)")
             } else {
                 do {
                     ordine = try document?.data(as: OrderStruct.self) ?? OrderStruct.empty
-
-                    temp = food.filter { f in
-                        for o in ordine.orderFood {
-                            if f.foodName == o.foodName && f.foodVariants.filter({ $0.variantChecked == false }) == o.foodVariants.filter({ $0.variantChecked == false }) && f.foodPrice == o.foodPrice && f.foodReversed == o.foodReversed && f.foodPortata == o.foodPortata {
-                                return true
-                            }
-                            return false
-                        }
-                        return false
-                    }
                     
-                    def = ordine.orderFood.map { v in
-                        for t in temp {
-                            if t.foodName == v.foodName && t.foodVariants.filter({ $0.variantChecked == false }) == v.foodVariants.filter({ $0.variantChecked == false }) && t.foodPrice == v.foodPrice && v.foodReversed == t.foodReversed && v.foodPortata == t.foodPortata {
-                                                                
-                                return Food(foodVariants: v.foodVariants, foodName: v.foodName, foodIva: v.foodIva, foodPortata: v.foodPortata, foodReversed: v.foodReversed, foodPrice: v.foodPrice, foodQuantity: v.foodQuantity + t.foodQuantity)
-                            }else {
-                                return v
-                            }
-                        }
-                        return v
-                    }
-                    temp = food.filter { f in
-                        for o in ordine.orderFood {
-                            if f.foodName == o.foodName && f.foodVariants.filter({ $0.variantChecked == false }) == o.foodVariants.filter({ $0.variantChecked == false }) && f.foodPrice == o.foodPrice && f.foodReversed == o.foodReversed && f.foodPortata == o.foodPortata {
-                                return false
-                            }
-                            return true
-                        }
-                        return false
-                    }
+                    ordine.orderFood.append(contentsOf: food)
                     
-                    def.append(contentsOf: temp)
-                    
-                    let finale = OrderStruct(id: ordine.id, userRestaurantID: ordine.userRestaurantID, orderFood: def, orderTime: ordine.orderTime, orderTotalPrice: ordine.orderTotalPrice, orderTable: ordine.orderTable, orderSenderID: ordine.orderSenderID)
-                    
-                    let totale = self.totalAmount(ordine: finale)
-                    self.updateData(itemToUpdate: OrderStruct(id: finale.id, userRestaurantID: finale.userRestaurantID, orderFood: finale.orderFood, orderTime: finale.orderTime, orderTotalPrice: totale, orderTable: finale.orderTable, orderSenderID: finale.orderSenderID))
+                    let totale = self.totalAmount(ordine: ordine)
+                    self.updateData(itemToUpdate: OrderStruct(id: ordine.id, userRestaurantID: ordine.userRestaurantID, orderFood: ordine.orderFood, orderTime: ordine.orderTime, orderTotalPrice: totale, orderTable: ordine.orderTable, orderSenderID: ordine.orderSenderID))
                     
                 } catch {
                     self.errorMessage = String(error.localizedDescription)
@@ -169,7 +133,6 @@ extension OrderViewModel {
 }
 
 extension OrderViewModel {
-
     func filterOrderbyTable(tavolo: String) -> OrderStruct{
         var cibo = [Food]()
         for list in self.orderList {
@@ -197,9 +160,26 @@ extension OrderViewModel {
         
         for food in ordine.orderFood {
             if !food.foodReversed {
+                for variant in food.foodVariants {
+                    if variant.variantChecked ?? false {
+                        total += (variant.variantPrice * food.foodQuantity)
+                    }
+                }
                 total += (food.foodPrice * food.foodQuantity)
             }
         }
+        return total
+    }
+    func totalFood(food : Food) -> Double{
+        var total : Double = 0
+        
+        for variant in food.foodVariants {
+            if variant.variantChecked ?? false {
+                total += (variant.variantPrice * food.foodQuantity)
+            }
+        }
+        total += (food.foodPrice * food.foodQuantity)
+
         return total
     }
     

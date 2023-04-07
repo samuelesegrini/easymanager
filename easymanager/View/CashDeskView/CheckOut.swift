@@ -194,14 +194,16 @@ struct CheckOut: View {
                     }
                 }
                 Spacer()
-                Text("\(food.foodPrice * food.foodQuantity,format: .currency(code: "EUR"))").strikethrough(food.foodReversed).font(.headline).foregroundColor(.accentColor)
-
+                Text("\(ordine.totalFood(food: food),format: .currency(code: "EUR"))").strikethrough(food.foodReversed).font(.headline).foregroundColor(.accentColor)
             }
             .frame(height: 55)
         }
         .onChange(of: multiSelection){ newValue in
             if !newValue.isEmpty {
-                subtotale = ordine.totalAmount(ordine: OrderStruct(userRestaurantID: "", orderFood: Array(newValue), orderTime: order.orderTime, orderTotalPrice: order.orderTotalPrice, orderTable: order.orderTable, orderSenderID: order.orderSenderID))
+                subtotale = ordine.totalAmount(ordine: OrderStruct(userRestaurantID: "", orderFood: Array(
+                    newValue.map{ food in
+                    Food(foodVariants: food.foodVariants, foodName: food.foodName, foodIva: food.foodIva, foodPortata: food.foodPortata, foodReversed: food.foodReversed, foodPrice: ordine.totalFood(food: food), foodQuantity: food.foodQuantity)}),
+                    orderTime: order.orderTime, orderTotalPrice: order.orderTotalPrice, orderTable: order.orderTable, orderSenderID: order.orderSenderID))
             }
         }
         .onAppear{
@@ -505,21 +507,7 @@ struct CheckOut: View {
             .disabled(payement.isEmpty)
             .frame(height: 70)
             .padding(.horizontal, 30)
-            HStack{
-                Button {
-                    
-                } label: {
-                    Text("Annulla ultimo Scontrino")
-                }
-                Divider()
-                Button {
-                    
-                } label: {
-                    Text("Stampa Fattura dell'Ultimo scontrino")
-                }
-            }
             .padding(.bottom)
-
         }
         .onAppear{
             contanti = subtotale

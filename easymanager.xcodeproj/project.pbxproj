@@ -149,6 +149,8 @@
 				A4E787DE29DAF0B2009E35B5 /* PreferitiView.swift */,
 				A4E787DA29DAEF98009E35B5 /* ScontrinoView.swift */,
 				A4E787DC29DAF034009E35B5 /* CheckOut.swift */,
+				A4E787B829DAC6D6009E35B5 /* SideOrderModifyView.swift */,
+				A4E787B629DAC558009E35B5 /* ModifyOrderView.swift */,
 			);
 			path = CashDeskView;
 			sourceTree = "<group>";
@@ -158,8 +160,6 @@
 			children = (
 				A468957429D9AD4F00328F0F /* OrdersView.swift */,
 				A4E787A529DAC2B1009E35B5 /* OrderSheetView.swift */,
-				A4E787B829DAC6D6009E35B5 /* SideOrderModifyView.swift */,
-				A4E787B629DAC558009E35B5 /* ModifyOrderView.swift */,
 			);
 			path = OrdersView;
 			sourceTree = "<group>";

@@ -13,6 +13,7 @@ struct OrderSheetView: View {
     @EnvironmentObject var product: ProductViewModel
     @EnvironmentObject var order: OrderViewModel
     
+    @Environment(\.dismiss) var dismiss
     @State var tableId : String
     @State private var showingProduct : ProductsStruct? = nil
 
@@ -42,11 +43,13 @@ struct OrderSheetView: View {
                                 
                                 order.addData()
                                 order.ordineVuoto = OrderStruct.empty
+                                dismiss()
                             }else {
                                 let idOrdine = order.orderList.first(where: { order in
                                     order.orderTable == table.tableName})?.id
                                 order.addFood(id: idOrdine ?? "", food: order.ordineVuoto.orderFood)
                                 order.ordineVuoto = OrderStruct.empty
+                                dismiss()
                             }
                         } label: {
                             ZStack {

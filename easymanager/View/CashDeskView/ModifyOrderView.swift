@@ -116,11 +116,8 @@ struct sheetOrdine : View {
                     
                     Text("\(prodotto.copiaProdotto.productDescription)").font(.caption)
                         .padding(.vertical)
-                    
                     Divider()
-                    
                     Stepper("Scegli la quantità : \(quant, specifier: "%.0f")", value: $quant).font(.subheadline)
-                    
                     Spacer()
                 }
                 VStack (alignment: .leading){
@@ -133,8 +130,10 @@ struct sheetOrdine : View {
                                 HStack {
                                     Image(systemName: variant.variantChecked == true ? "checkmark.circle.fill" :"circle")
                                     Text(variant.variantName)
+                                        .font(.footnote)
                                     Text("\(variant.variantPrice,format: .currency(code: "EUR"))")
                                         .hAllign(.trailing)
+                                        .foregroundColor(.secondary)
                                 }
                             }
                         }
@@ -156,14 +155,14 @@ struct sheetOrdine : View {
                 if doubleProduct {
                     ordine.ordineTavolo.orderFood = ordine.DoubleProducts(prodotto: prodotto.copiaProdotto, quantity: quant)
                 } else {
-                    ordine.ordineTavolo.orderFood.append(Food(foodVariants: prodotto.copiaProdotto.productVariants, foodName: prodotto.copiaProdotto.productName, foodIva: prodotto.copiaProdotto.productIva, foodPortata: 1, foodReversed: false, foodPrice: prodotto.productTotal(prodotto: prodotto.copiaProdotto), foodQuantity: quant))
+                    ordine.ordineTavolo.orderFood.append(Food(foodVariants: prodotto.copiaProdotto.productVariants, foodName: prodotto.copiaProdotto.productName, foodIva: prodotto.copiaProdotto.productIva, foodPortata: 1, foodReversed: false, foodPrice: prodotto.copiaProdotto.productPrice, foodQuantity: quant))
                 }
                 
             } else {
                 if doubleProduct {
                     ordine.ordineVuoto.orderFood = ordine.DoubleProducts(prodotto: prodotto.copiaProdotto, quantity: quant)
                 } else {
-                    ordine.ordineVuoto.orderFood.append(Food(foodVariants: prodotto.copiaProdotto.productVariants, foodName: prodotto.copiaProdotto.productName, foodIva: prodotto.copiaProdotto.productIva, foodPortata: 1, foodReversed: false, foodPrice: prodotto.productTotal(prodotto: prodotto.copiaProdotto), foodQuantity: quant))
+                    ordine.ordineVuoto.orderFood.append(Food(foodVariants: prodotto.copiaProdotto.productVariants, foodName: prodotto.copiaProdotto.productName, foodIva: prodotto.copiaProdotto.productIva, foodPortata: 1, foodReversed: false, foodPrice: prodotto.copiaProdotto.productPrice, foodQuantity: quant))
                 }
             }
         } label: {

@@ -60,7 +60,7 @@ struct CategoryManagerView: View {
                     Toggle("Vuoi salvare la Categoria?", isOn: $savecategory)
                 }
             }
-            .navigationTitle("Aggiungi Variante")
+            .navigationTitle("Aggiungi Categoria")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
@@ -85,6 +85,7 @@ struct CategoryManagerView: View {
                     .foregroundColor(.white)
                 }
             }
+            .disabled(!savecategory)
             .padding()
             .padding(.horizontal)
         }

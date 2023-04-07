@@ -55,9 +55,10 @@ struct orderModify : View {
                                                         HStack{
                                                             Image(systemName: "doc.plaintext")
                                                             Text(variant.variantName)
+                                                                .padding(.trailing)
+                                                            Text("\(variant.variantPrice, format: .currency(code: "EUR")) x\(food.foodQuantity, format: .number)")
                                                         }.font(.subheadline).foregroundColor(.secondary)
                                                     }else {
-                                                        
                                                     }
                                                 }
                                             }
