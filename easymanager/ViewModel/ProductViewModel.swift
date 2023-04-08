@@ -86,6 +86,10 @@ extension ProductViewModel {
                                 // A ProductStruct value was successfully initialized from the DocumentSnapshot.
                                 self?.errorMessage = nil
                                 
+                                if list.id == "prova" {
+                                    return nil
+                                }
+                                
                                 return list
                             case .failure(let error):
                                 // A ProductStruct value could not be initialized from the DocumentSnapshot.

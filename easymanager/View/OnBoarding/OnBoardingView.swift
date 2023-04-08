@@ -275,6 +275,7 @@ struct OnBoardingView: View {
                 HStack{
                     Text("Nome Attività : ").bold()
                     TextField("Obbligatorio", text: $restaurant.restaurantName)
+                        .keyboardType(.default)
                 }
                     .padding(.horizontal)
                     .padding(.top)
@@ -282,6 +283,7 @@ struct OnBoardingView: View {
                     Text("Partita IVA : ").bold()
                     TextField("Partita Iva (Max. 11 Cifre)", value: $restaurant.restaurantIva, format: .number)
                         .padding()
+                        .keyboardType(.decimalPad)
                     
                     //If the number of the partita IVA is invalid (More than 11 digits) display red marks
                         .border(Color.red, width: isNumberValid ? 0 : 2)
@@ -387,8 +389,13 @@ struct OnBoardingView: View {
             Form{
                 Section{
                     TextField("Nome Sede", text: $locationName)
+                        .keyboardType(.default)
                     TextField("Via delle Stelle, 73", text: $streetAddress)
+                        .keyboardType(.default)
+
                     TextField("Milano", text: $city)
+                        .keyboardType(.default)
+
                     TextField("20122", text: $zip)
                         .keyboardType(.decimalPad)
                 }header: {
@@ -398,6 +405,7 @@ struct OnBoardingView: View {
                     TextField("+39", text: $phone)
                         .keyboardType(.decimalPad)
                     TextField("nome.cognome@email", text: $email)
+                        .keyboardType(.default)
                 }header: {
                     Text("Inserisci Contatti")
                 }footer: {
@@ -449,18 +457,21 @@ struct OnBoardingView: View {
                 HStack{
                     Text("Nome Titolare : ").bold()
                     TextField("Obbligatorio", text: $auth.name)
+                        .keyboardType(.default)
                 }
                 .padding(.horizontal)
                 .padding(.top)
                 HStack{
                     Text("Cognome Titolare : ").bold()
                     TextField("Obbligatorio", text: $auth.surname)
+                        .keyboardType(.default)
                 }
                 .padding(.horizontal)
                 .padding(.top)
                 HStack{
                     Text("Email Titolare : ").bold()
                     TextField("Obbligatorio", text: $auth.email)
+                        .keyboardType(.emailAddress)
                 }
                 .padding()
             }

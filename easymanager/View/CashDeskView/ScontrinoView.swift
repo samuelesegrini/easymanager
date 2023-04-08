@@ -48,6 +48,10 @@ struct ScontrinoView: View {
                                     }.tag(order.orderTable)
                                 }
                             }
+                            .onChange(of: ordine.orderList, perform: { newValue in
+                                selectedTable = ""
+                                ordine.ordineTavolo = OrderStruct.empty
+                            })
 
                         } label: {
                             ZStack(alignment: .leading){
@@ -93,7 +97,6 @@ struct ScontrinoView: View {
                     }
                 }
                 VStack(alignment: .leading){
-                    
                     let totalFoodPrice = ordine.totalAmount(ordine: ordine.ordineTavolo)
                     VStack {
                         orderModify()
@@ -134,6 +137,9 @@ struct ScontrinoView: View {
                 }
             }
         }
+        .onAppear{
+            ordine.ordineVuoto = OrderStruct.empty
+        }
         .background(Color(UIColor.systemBackground))
         .cornerRadius(15)
         .padding(.trailing, sizeClass == .compact ? 0 : 20)
@@ -156,7 +162,8 @@ struct ScontrinoView: View {
                     ordine.orderToModifyOrDelete = ordine.ordineVuoto
                     ordine.addData()
                     
-                    orderSheet = ordine.ordineVuoto
+                    orderSheet = ordine.orderToModifyOrDelete
+                    ordine.orderToModifyOrDelete = OrderStruct.empty
                     
                 } label: {
                     ZStack {
@@ -174,6 +181,8 @@ struct ScontrinoView: View {
                 .sheet(item: $orderSheet) { order in
                     VStack {
                         CheckOut(order: ordine.ordineVuoto)
+                    }.onAppear{
+                        ordine.ordineVuoto = order
                     }
                 }
             }

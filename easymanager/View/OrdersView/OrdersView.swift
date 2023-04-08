@@ -17,7 +17,7 @@ struct OrdersView: View {
     @State private var showingSheet : TableStruct? = nil
     @State private var showingProduct : ProductsStruct? = nil
     @State private var noteTavolo = ""
-    @State private var coperto = 0
+    @State private var coperto : Double = 0
     @State private var numeroCop = 0
     
     private let adaptiveColumns = [
@@ -333,6 +333,9 @@ struct OrdersView: View {
                                     Text(cop.nomeCoperto).tag(cop.prezzoCoperto)
                                 }
                             }
+                            .onAppear{
+                                coperto = tavolo.copertoList.first?.prezzoCoperto ?? 1
+                            }
                         }
                         HStack{
                             Picker("Numero Coperti da Inserire", selection: $numeroCop) {
@@ -357,7 +360,7 @@ struct OrdersView: View {
                     .simultaneousGesture(TapGesture().onEnded {
                         var food = [Food]()
                         food.append(Food(foodVariants: [], foodName: "Coperto", foodIva: "10", foodPortata: 1, foodReversed: false, foodPrice: Double(coperto), foodQuantity: Double(numeroCop)))
-                        order.orderToModifyOrDelete = OrderStruct( userRestaurantID: "N1VqnVlgKcc1B7MuFBM0", orderFood: food, orderTime: Date(), orderTotalPrice: Double(coperto * numeroCop), orderTable: table.tableName, orderSenderID: auth.utente.id ?? "")
+                        order.orderToModifyOrDelete = OrderStruct( userRestaurantID: "N1VqnVlgKcc1B7MuFBM0", orderFood: food, orderTime: Date(), orderTotalPrice: coperto * Double(numeroCop), orderTable: table.tableName, orderSenderID: auth.utente.id ?? "")
                         order.addData()
                         
                         tavolo.updateData(table: TableStruct(id: table.id, userRestaurantID: table.userRestaurantID, waiterID: auth.utente.id ?? "", tableServiceBegin: Date(), tableSeatsOccupied: table.tableSeatsOccupied, tableName: table.tableName, tableSeats: table.tableSeats, tableStatus: "In Attesa"))

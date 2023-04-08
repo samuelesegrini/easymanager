@@ -34,6 +34,12 @@ struct TableManagerView: View {
                         }
                     }
                 }
+                Section{
+                    NavigationLink("Gestisci i Coperti") {
+                        CopertiManagementView()
+                    }
+                    .foregroundColor(.accentColor)
+                }
             }
         }
         .sheet(item: $editSaveSheet, content: { product in
@@ -63,6 +69,7 @@ struct TableManagerView: View {
                         Text("Nome").bold()
                         TextField("Obbligatorio", text: $tab.tableName)
                             .padding(.horizontal, 45)
+                            .keyboardType(.default)
                     }
                     HStack {
                         Text("Sedute").bold()
@@ -86,6 +93,7 @@ struct TableManagerView: View {
             }
             Spacer()
             Button {
+                table.tableToModifyOrDelete = tab
                 if ruolo == "edit"{
                     table.updateData(table: tab)
                 }else if ruolo == "save"{

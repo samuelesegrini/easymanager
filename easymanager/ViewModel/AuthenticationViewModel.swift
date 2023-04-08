@@ -14,6 +14,7 @@ import FirebaseAuth
 enum AuthenticationState {
   case unauthenticated
   case authenticated
+  case payement
 }
 
 @MainActor

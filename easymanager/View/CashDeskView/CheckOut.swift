@@ -20,6 +20,7 @@ struct CheckOut: View {
 
     @EnvironmentObject var ordine : OrderViewModel
     @EnvironmentObject var printerManager : PrinterViewModel
+    @EnvironmentObject var table : TableViewModel
     @EnvironmentObject var auth : AuthenticationViewModel
         
     @State private var numeroConti = 1.0
@@ -27,24 +28,27 @@ struct CheckOut: View {
     @State private var importoPagato : Double = 0
     
     @State private var payement : [pagamento] = []
+    @State private var pagamentoTipo : String = "Contante"
+    @State private var tastierinoSelection = false
     @State private var pagatoDef : Double = 0
     
     @State private var showTicket = false
     @State private var numberTicket : Double = 1
     @State private var valueTicket : Double = 1
     
+    @State private var calcolator = false
+    
     @State private var multiSelection = Set<Food>()
     @State var order : OrderStruct
     
     @State private var contanti : Double = 0
-    @State private var carta : Double = 0
+    @State private var elettronico : Double = 0
     @State private var ticket : Double = 0
-    @State private var satispay : Double = 0
 
     let grid = [
-            ["7", "8", "9", "X"],
-            ["4", "5", "6", "+"],
-            ["1", "2", "3", "AC"],
+            ["7", "8", "9", "AC"],
+            ["4", "5", "6", "x"],
+            ["1", "2", "3", "+"],
             [",", "0", "=", "⌦"]
         ]
         
@@ -79,17 +83,18 @@ struct CheckOut: View {
                         }
                         .padding(.horizontal, 30)
                         
-                        
-                        Stepper("Dividi il conto alla romana tra \(numeroConti, format: .number)", value: $numeroConti, in: 1...50)
-                            .padding(.bottom)
-                            .onChange(of: numeroConti) { newValue in
-                                if multiSelection.isEmpty {
-                                    subtotale = order.orderTotalPrice / newValue
-                                }else {
-                                    subtotale = ordine.totalAmount(ordine: OrderStruct(userRestaurantID: "", orderFood: Array(multiSelection), orderTime: order.orderTime, orderTotalPrice: order.orderTotalPrice, orderTable: order.orderTable, orderSenderID: order.orderSenderID)) / newValue
+                        if multiSelection.isEmpty{
+                            Stepper("Dividi il conto alla romana tra \(numeroConti, format: .number)", value: $numeroConti, in: 1...50)
+                                .padding(.bottom)
+                                .onChange(of: numeroConti) { newValue in
+                                    if multiSelection.isEmpty {
+                                        subtotale = order.orderTotalPrice / newValue
+                                    }else {
+                                        subtotale = ordine.totalAmount(ordine: OrderStruct(userRestaurantID: "", orderFood: Array(multiSelection), orderTime: order.orderTime, orderTotalPrice: order.orderTotalPrice, orderTable: order.orderTable, orderSenderID: order.orderSenderID)) / newValue
+                                    }
                                 }
-                            }
-                            .padding(.horizontal,30)
+                                .padding(.horizontal,30)
+                        }
                     }
                     VStack(spacing: .zero) {
                         VStack(alignment: .leading) {
@@ -139,13 +144,8 @@ struct CheckOut: View {
                     .padding()
                     
                 }else {
-                    /// - Gestire errore di connessione alla stampante
-                    
                     Button {
                         ordine.ordineVuoto = OrderStruct.empty
-                        /// - Stampa Preconto con la stampante
-                        /// - azzerare ordinetavolo ?????????
-                        /// - salvare l'ordine in un database a parte
                         
                         printerManager.sendXMLRequest(receipt: order, subtotale: subtotale, pagamento: [], user: auth.utente)
                         dismiss()
@@ -202,12 +202,9 @@ struct CheckOut: View {
             if !newValue.isEmpty {
                 subtotale = ordine.totalAmount(ordine: OrderStruct(userRestaurantID: "", orderFood: Array(
                     newValue.map{ food in
-                    Food(foodVariants: food.foodVariants, foodName: food.foodName, foodIva: food.foodIva, foodPortata: food.foodPortata, foodReversed: food.foodReversed, foodPrice: ordine.totalFood(food: food), foodQuantity: food.foodQuantity)}),
+                        Food(foodVariants: food.foodVariants, foodName: food.foodName, foodIva: food.foodIva, foodPortata: food.foodPortata, foodReversed: food.foodReversed, foodPrice: food.foodPrice, foodQuantity: food.foodQuantity)}),
                     orderTime: order.orderTime, orderTotalPrice: order.orderTotalPrice, orderTable: order.orderTable, orderSenderID: order.orderSenderID))
             }
-        }
-        .onAppear{
-            numeroConti = 1
         }
         .environment(\.editMode, .constant(self.isEditing ? EditMode.active : EditMode.inactive))
         .listStyle(.insetGrouped)
@@ -222,229 +219,173 @@ struct CheckOut: View {
             HStack{
                 VStack{
                     Text("Totale")
-                        .font(.title)
+                        .font(.subheadline)
                         .foregroundColor(.secondary)
                     Text("\(subtotale, format: .currency(code: "EUR"))")
-                        .font(.largeTitle).bold()
+                        .font(.title3).bold()
                 }
                 .padding()
                 Divider()
-                    .frame(height: 130)
+                    .frame(height: 80)
                 VStack{
                     Text("Da Pagare")
-                        .font(.title)
+                        .font(.subheadline)
                         .foregroundColor(.secondary)
                     let diff = subtotale - pagatoDef
                     if diff > 0 {
                         Text("\(diff, format: .currency(code: "EUR"))")
-                            .font(.largeTitle).bold()
+                            .font(.title3).bold()
                     }else{
                         Text("\(0, format: .currency(code: "EUR"))")
-                            .font(.largeTitle).bold()
+                            .font(.title3).bold()
                     }
                 }
                 .padding()
                 Divider()
-                    .frame(height: 130)
+                    .frame(height: 80)
                 VStack{
                     Text("Resto")
-                        .font(.title)
+                        .font(.subheadline)
                         .foregroundColor(.secondary)
                     let resto = -(subtotale - pagatoDef)
                     if resto > 0 {
                         Text("\(resto, format: .currency(code: "EUR"))")
-                            .font(.largeTitle).bold()
+                            .font(.title3).bold()
                     }else{
                         Text("\(0, format: .currency(code: "EUR"))")
-                            .font(.largeTitle).bold()
+                            .font(.title3).bold()
                     }
                 }
                 .padding()
             }
-            
             HStack{
-                VStack{
-                    Button {
-                        carta = 0
+                Text("Seleziona tipo di Pagamento")
+                Spacer()
+                Picker("Scegli tipo di pagamento", selection: $pagamentoTipo) {
+                    Text("Contante").tag("Contante")
+                    Text("Pagamento Elettronico").tag("Pagamento Elettronico")
+                    Text("Ticket").tag("Ticket")
+                }.onChange(of: pagamentoTipo) { newValue in
+                    if newValue == "Contante" {
+                        elettronico = 0
                         contanti = subtotale
                         ticket = 0
-                        satispay = 0
-                        
-                    } label: {
-                        ZStack {
-                            Rectangle()
-                                .foregroundColor(.green)
-                                .cornerRadius(15)
-                            VStack{
-                                if contanti == 0 {
-                                    Image(systemName: "banknote.fill")
-                                        .font(.system(size: 30))
-                                }else {
-                                    Text("\(contanti, format: .currency(code: "EUR"))")
-                                        .font(.title)
-                                    Text("Contanti")
-                                        .font(.subheadline)
-                                }
-                            }.foregroundColor(.white)
-                        }
-                    }
-                    Button {
-                        payement.append(pagamento(pagamentoTipo: 0, pagamentoImporto: contanti))
-                    } label: {
-                        Text("Aggiungi Pagamento")
-                            .font(.footnote)
-                    }
-                }
-                VStack{
-                    Button {
-                        carta = subtotale
-                        contanti = 0
-                        ticket = 0
-                        satispay = 0
-                        
-                        
-                    } label: {
-                        ZStack {
-                            Rectangle()
-                                .foregroundColor(.orange)
-                                .cornerRadius(15)
-                            VStack{
-                                if carta == 0 {
-                                    Image(systemName: "creditcard.fill")
-                                        .font(.system(size: 30))
-                                }else {
-                                    Text("\(carta, format: .currency(code: "EUR"))")
-                                        .font(.title)
-                                }
-                                Text("Carta")
-                                    .font(.subheadline)
-                            }.foregroundColor(.white)
-                        }
-                    }
-                    Button {
-                        payement.append(pagamento(pagamentoTipo: 2, pagamentoImporto: carta))
-                    } label: {
-                        Text("Aggiungi Pagamento")
-                            .font(.footnote)
 
-                    }
-                }
-                VStack{
-                    Button {
-                        carta = 0
-                        contanti = 0
+                    }else if newValue == "Pagamento Elettronico" {
+                        elettronico = subtotale
                         ticket = 0
-                        satispay = subtotale
-                        
-                        
-                    } label: {
-                        ZStack {
-                            Rectangle()
-                                .foregroundColor(.red)
-                                .cornerRadius(15)
-                            VStack{
-                                if satispay == 0 {
-                                    Image("2")
-                                        .resizable()
-                                        .frame(width: 30, height: 30)
-                                }else {
-                                    Text("\(satispay, format: .currency(code: "EUR"))")
-                                        .font(.title)
-                                }
-                                Text("Satispay")
-                                    .font(.subheadline)
-                            }.foregroundColor(.white)
-                        }
-                    }
-                    Button {
-                        payement.append(pagamento(pagamentoTipo: 2, pagamentoImporto: satispay))
-                    } label: {
-                        Text("Aggiungi Pagamento")
-                            .font(.footnote)
-                    }
-                }
-                VStack{
-                    Button {
-                        carta = 0
                         contanti = 0
+
+                    }else{
+                        elettronico = 0
                         ticket = subtotale
-                        satispay = 0
-                        
-                    } label: {
-                        ZStack {
-                            Rectangle()
-                                .foregroundColor(.blue)
-                                .cornerRadius(15)
-                            VStack{
-                                if ticket == 0 {
-                                    Image(systemName: "ticket.fill")
-                                        .font(.system(size: 30))
-                                }else {
-                                    Text("\(ticket, format: .currency(code: "EUR"))")
-                                        .font(.title)
-                                }
-                                Text("Ticket")
-                                    .font(.subheadline)
-                            }.foregroundColor(.white)
-                            
-                        }
-                    }
-                    Button {
-                        payement.append(pagamento(pagamentoTipo: 3, pagamentoImporto: ticket))
-                    } label: {
-                        Text("Aggiungi Pagamento")
-                            .font(.footnote)
+                        contanti = 0
                     }
                 }
             }
-            .frame(height: 100)
-            .padding(.horizontal)
-            .padding(.top)
+            Text("Con Pagamento Elettronico si intende tutti i pagamenti come: Satispay, Bancomat, etc. ")
+                .hAllign(.leading)
+                .foregroundColor(.secondary)
+                .font(.caption2)
+                .padding(.bottom)
             
+            VStack(alignment: .leading){
+                Button("Vuoi inserire Importo Manualmente?") {
+                    tastierinoSelection.toggle()
+                }
+                Text("Di Default il Pagamento che andrai ad aggiungere coprirà l'intero importo da pagare, clicca qui per inserire manualmente l'importo")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+            }
+            .padding(.bottom)
+            .hAllign(.leading)
+                
             HStack{
-                VStack{
-                    ForEach(grid, id: \.self){ row in
-                        HStack{
-                            ForEach(row, id: \.self){ cell in
-                                Button(action: { buttonPressed(cell: cell)}, label: {
-                                    Text(cell)
-                                        .foregroundColor(.primary)
-                                        .bold()
-                                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                                })
-                                .background(
-                                    RoundedRectangle(cornerRadius: 15)
-                                        .foregroundColor(buttonColor(cell))
-                                )
+                Text("Importo Pagato in \(pagamentoTipo)")
+                    .font(.footnote)
+                Spacer()
+                if pagamentoTipo == "Contante"{
+                    Text("\(contanti , format: .currency(code: "EUR"))")
+                }else if pagamentoTipo == "Pagamento Elettronico" {
+                    Text("\(elettronico , format: .currency(code: "EUR"))")
+                }else{
+                    Text("\(ticket , format: .currency(code: "EUR"))")
+                }
+            }
+            .padding(.bottom)
+            .popover(isPresented: $tastierinoSelection) {
+                HStack{
+                    VStack{
+                        if pagamentoTipo == "Ticket"{
+                            Stepper("Numbero di Ticket : \(numberTicket, format: .number)", value: $numberTicket)
+                                .padding()
+                        }
+                        HStack(alignment: .center){
+                            Text("IMPORTO")
+                                .font(.footnote)
+                            Spacer()
+                            Text(" \(visibleWorkings)")
+                                .lineLimit(1, reservesSpace: true)
+                                .bold()
+                        }
+                        .padding()
+                        ForEach(grid, id: \.self){ row in
+                            HStack{
+                                ForEach(row, id: \.self){ cell in
+                                    Button(action: { buttonPressed(cell: cell)}, label: {
+                                        Text(cell)
+                                            .foregroundColor(.primary)
+                                            .bold()
+                                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                                    })
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 15)
+                                            .foregroundColor(buttonColor(cell))
+                                    )
+                                }
                             }
                         }
+                        .padding()
                     }
-                }
-                .frame(maxWidth: 400, maxHeight: .infinity)
-                .hAllign(.leading)
-                .padding()
-                .alert(isPresented: $showAlert){
-                    Alert(
-                        title: Text("Input non Valido"),
-                        message: Text(visibleWorkings),
-                        dismissButton: .default(Text("Okay"))
-                    )
-                }
-                VStack{
-                    HStack{
-                        Text("IMPORTO")
-                            .font(.headline)
-                        Spacer()
-                        Text("\(visibleWorkings)")
-                    }
+                    .frame(width: 350, height: 350)
+                    .hAllign(.leading)
                     .padding()
-                    .background(RoundedRectangle(cornerRadius: 15)
-                        .foregroundColor(.accentColor.opacity(0.2)))
-                    
-                    if ticket != 0 {
-                        Stepper("Numbero di Ticket : \(numberTicket, format: .number)", value: $numberTicket)
+                    .alert(isPresented: $showAlert){
+                        Alert(
+                            title: Text("Input non Valido"),
+                            message: Text(visibleWorkings),
+                            dismissButton: .default(Text("Okay"))
+                        )
                     }
-                    List(payement){ pay in
+                }
+            }
+            Button {
+                if pagamentoTipo == "Contante"{
+                    payement.append(pagamento(pagamentoTipo: 0, pagamentoImporto: contanti))
+                }else if pagamentoTipo == "Pagamento Elettronico" {
+                    payement.append(pagamento(pagamentoTipo: 2, pagamentoImporto: elettronico))
+                }else{
+                    payement.append(pagamento(pagamentoTipo: 3, pagamentoImporto: ticket))
+                }
+                var sum : Double = 0
+                _ = payement.map{ p in
+                    sum += p.pagamentoImporto
+                    return true
+                }
+                pagatoDef = sum
+            } label: {
+                HStack{
+                    Image(systemName: "square.and.arrow.down")
+                    Text("Salva Pagamento")
+                }.padding(.horizontal)
+            }
+            .buttonStyle(.bordered)
+            
+            Spacer()
+            
+            VStack{
+                List(payement){ pay in
+                    Section{
                         HStack{
                             if pay.pagamentoTipo == 0 {
                                 Text("Contante")
@@ -462,67 +403,159 @@ struct CheckOut: View {
                                 payement.removeAll { p in
                                     pay.id == p.id
                                 }
+                                var sum : Double = 0
+                                _ = payement.map{ p in
+                                    sum += p.pagamentoImporto
+                                    return true
+                                }
+                                pagatoDef = sum
                             } label: {
                                 Image(systemName: "trash")
                                     .foregroundColor(.red)
                             }
                         }
                     }
-                    .listStyle(.plain)
                 }
-                .padding()
+                .scrollContentBackground(.hidden)
+                .listStyle(.plain)
             }
-            Spacer()
-            Button {
-                printerManager.sendXMLRequest(receipt: order, subtotale: subtotale, pagamento: payement, user: auth.utente)
-                
-                if order.orderTotalPrice == subtotale{
-                    ordine.deleteData(order: order)
-                    dismiss()
-                }else {
-                    if !multiSelection.isEmpty{
-                        order.orderFood = order.orderFood.filter{ !Array(multiSelection).contains($0) }
-                        order.orderTotalPrice = ordine.totalAmount(ordine: order)
-                    }else{
-                        ordine.deleteData(order: order)
-                        dismiss()
-                    }
-                    if numeroConti > 1 {
-                        numeroConti -= 1
-                        order.orderTotalPrice -= subtotale
-                    }else{
-                        ordine.deleteData(order: order)
-                        dismiss()
-                    }
-                }
-            } label: {
-                ZStack {
-                    Rectangle()
-                        .cornerRadius(15)
-                    Text("Stampa Scontrino")
-                        .foregroundColor(.white)
-                        .font(.title3).bold()
-                }
-            }
-            .disabled(payement.isEmpty)
-            .frame(height: 70)
-            .padding(.horizontal, 30)
-            .padding(.bottom)
-        }
-        .onAppear{
-            contanti = subtotale
-            carta = 0
-            ticket = 0
-            satispay = 0
+            .padding()
+            .frame(height: 150)
             
-            pagatoDef = contanti + carta + satispay + ticket
+            if (subtotale-pagatoDef)>0 {
+                Button {
+                } label: {
+                    ZStack {
+                        Rectangle()
+                            .cornerRadius(15)
+                        HStack{
+                            Text("Aggiungi altri Pagamenti per \(subtotale-pagatoDef, format: .currency(code: "EUR"))")
+                        }
+                        .foregroundColor(.white)
+                        .font(.headline)
+                    }
+                }
+                .disabled(true)
+                .frame(height: 70)
+                .padding(.horizontal,60)
+                .padding(.bottom)
+            }else{
+                Button {
+                    
+                    //If payement is for all the order
+                    if order.orderTotalPrice == subtotale {
+                        printerManager.sendXMLRequest(receipt: order, subtotale: subtotale, pagamento: payement, user: auth.utente)
+                        
+                        var t = table.tableList.first{ t in
+                            t.tableName == order.orderTable && t.waiterID == order.orderSenderID
+                        } ?? TableStruct.empty
+                        
+                        t.tableStatus = "Libero"
+                        t.tableSeatsOccupied = 0
+                        t.waiterID = ""
+                        
+                        if t.id != ""{
+                            table.updateData(table: t)
+                        }
+                        
+                        if ordine.selectedOption == "Tavolo"{
+                            ordine.deleteData(order: ordine.ordineTavolo)
+                            dismiss()
+                        }else{
+                            ordine.deleteData(order: ordine.ordineVuoto)
+                            dismiss()
+                        }
+                    }else {
+                        //If user selected only some of the products
+                        if !multiSelection.isEmpty{
+                            order.orderFood = order.orderFood.filter{ Array(multiSelection).contains($0) }
+                            
+                            printerManager.sendXMLRequest(receipt: order, subtotale: subtotale, pagamento: payement, user: auth.utente)
+                            
+                            if ordine.selectedOption == "Tavolo"{
+                                order.orderFood = order.orderFood.filter{ !Array(multiSelection).contains($0) }
+                                order.orderTotalPrice = ordine.totalAmount(ordine: order)
+                                
+                                ordine.ordineTavolo = order
+                            }else{
+                                order.orderFood = order.orderFood.filter{ !Array(multiSelection).contains($0) }
+                                order.orderTotalPrice = ordine.totalAmount(ordine: order)
+                                
+                                ordine.ordineVuoto = order
+                            }
+                        }else{
+                            if numeroConti > 1 {
+                                if ordine.selectedOption == "Tavolo"{
+                                    order.orderTotalPrice -= subtotale
+                                    ordine.ordineTavolo.orderTotalPrice -= subtotale
+                                }else{
+                                    order.orderTotalPrice -= subtotale
+                                    ordine.ordineVuoto.orderTotalPrice -= subtotale
+                                }
+                                numeroConti -= 1
+                            }else{
+                                var t = table.tableList.first{ t in
+                                    t.tableName == order.orderTable && t.waiterID == order.orderSenderID
+                                } ?? TableStruct.empty
+                                
+                                t.tableStatus = "Libero"
+                                t.tableSeatsOccupied = 0
+                                t.waiterID = ""
+                                
+                                if t.id != ""{
+                                    table.updateData(table: t)
+                                }
+                                
+                                if ordine.selectedOption == "Tavolo"{
+                                    ordine.deleteData(order: ordine.ordineTavolo)
+                                    dismiss()
+                                }else{
+                                    ordine.deleteData(order: ordine.ordineVuoto)
+                                    dismiss()
+                                }
+                            }
+                        }
+                    }
+                    payement = []
+                    pagatoDef = 0
+                    pagamentoTipo = "Contante"
+                } label: {
+                    ZStack {
+                        Rectangle()
+                            .cornerRadius(15)
+                        HStack{
+                            Image(systemName: "printer.fill")
+                            Text("Stampa Scontrino")
+                        }
+                        .foregroundColor(.white)
+                        .font(.headline)
+                    }
+                }
+                .frame(height: 70)
+                .padding(.horizontal,60)
+                .disabled(payement.isEmpty)
+                //Button("Annullo Ultimo Scontrino") {
+                    
+                //}
+                //.padding(.bottom)
+            }
+        }
+        .padding()
+        .onAppear{
+            payement = []
+            contanti = subtotale
+            elettronico = 0
+            ticket = 0
+            
+            pagatoDef = contanti + elettronico + ticket
         }
     }
+    
     func buttonColor(_ cell: String) -> Color{
-        if(cell == "AC" || cell == "⌦"){
-            return .accentColor
+        if(cell == "AC" || cell == "="){
+            return .accentColor.opacity(0.5)
         }
-        if(cell == "-" || cell == "=" || operators.contains(cell)){
+        if(cell == "-" || cell == "x" || cell == "⌦" || operators.contains(cell)){
             return .accentColor.opacity(0.2)
         }
         return .clear
@@ -539,24 +572,18 @@ struct CheckOut: View {
             visibleResults = calculateResults()
             if contanti != 0{
                 contanti = visibleResults
-                pagatoDef = contanti + carta + satispay + ticket
+                pagatoDef = contanti + elettronico + ticket
                 visibleWorkings = ""
 
-            }else if carta != 0 {
-                carta = visibleResults
-                pagatoDef = contanti + carta + satispay + ticket
-                visibleWorkings = ""
-
-            }else if satispay != 0{
-                satispay = visibleResults
-                pagatoDef = contanti + carta + satispay + ticket
+            }else if elettronico != 0 {
+                elettronico = visibleResults
+                pagatoDef = contanti + elettronico + ticket
                 visibleWorkings = ""
 
             }else{
                 ticket = visibleResults * Double(numberTicket)
-                pagatoDef = contanti + carta + satispay + ticket
+                pagatoDef = contanti + elettronico + ticket
                 visibleWorkings = ""
-
             }
         case "-":
             addMinus()
@@ -612,5 +639,14 @@ struct CheckOut: View {
             return String(format: "%.0f", val)
         }
         return String(format: "%.2f", val)
+    }
+}
+struct CheckOut_Previews: PreviewProvider {
+    static var previews: some View {
+        CheckOut(order: OrderViewModel().ordineTavolo)
+            .environmentObject(PrinterViewModel())
+            .environmentObject(TableViewModel())
+            .environmentObject(AuthenticationViewModel())
+            .environmentObject(OrderViewModel())
     }
 }

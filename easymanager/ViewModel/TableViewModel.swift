@@ -27,6 +27,7 @@ class TableViewModel: ObservableObject, Identifiable {
     @Published var tableStatus = ""
     
     @Published var tableToModifyOrDelete = TableStruct.empty
+    @Published var copertoToModifyOrDelete = CopertoStruct.empty
 }
 
 extension TableViewModel {
@@ -85,6 +86,10 @@ extension TableViewModel {
                                 // A TableStruct value was successfully initialized from the DocumentSnapshot.
                                 self?.errorMessage = nil
                             
+                                if list.id == "prova" {
+                                    return nil
+                                }
+                                
                                 return list
                             case .failure(let error):
                                 // A TableStruct value could not be initialized from the DocumentSnapshot.
@@ -154,6 +159,31 @@ extension TableViewModel {
             return tableList.filter { $0.tableStatus == "Prenotato"}
         case .waiting:
             return tableList.filter { $0.tableStatus == "In Attesa"}
+        }
+    }
+    func addCoperto(){
+        do{
+            try db.collection("coperto").addDocument(from: copertoToModifyOrDelete)
+            self.fetchCoperto()
+            errorMessage = ""
+            copertoToModifyOrDelete = CopertoStruct.empty
+        }catch{
+            errorMessage = error.localizedDescription
+        }
+    }
+    func deleteCoperto(){
+        db.collection("coperto").document(copertoToModifyOrDelete.id ?? "").delete { error in
+            if error == nil {
+                DispatchQueue.main.async {
+                    self.copertoList.removeAll{ categ in
+                        return categ.id == self.copertoToModifyOrDelete.id
+                    }
+                }
+                self.copertoToModifyOrDelete = CopertoStruct.empty
+            }else{
+                self.errorMessage = error?.localizedDescription
+                self.copertoToModifyOrDelete = CopertoStruct.empty
+            }
         }
     }
 }

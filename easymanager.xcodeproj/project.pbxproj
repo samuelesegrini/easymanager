@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		A41CDC1D29DED3E9001985AC /* CookingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A41CDC1C29DED3E9001985AC /* CookingView.swift */; };
+		A45C275929E163A1005D9BB2 /* CopertiManagementView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A45C275829E163A1005D9BB2 /* CopertiManagementView.swift */; };
 		A468957229D9AD1A00328F0F /* CashDesk.swift in Sources */ = {isa = PBXBuildFile; fileRef = A468957129D9AD1A00328F0F /* CashDesk.swift */; };
 		A468957529D9AD4F00328F0F /* OrdersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A468957429D9AD4F00328F0F /* OrdersView.swift */; };
 		A468957829D9AD8E00328F0F /* DiningView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A468957729D9AD8E00328F0F /* DiningView.swift */; };
@@ -65,6 +66,7 @@
 
 /* Begin PBXFileReference section */
 		A41CDC1C29DED3E9001985AC /* CookingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CookingView.swift; sourceTree = "<group>"; };
+		A45C275829E163A1005D9BB2 /* CopertiManagementView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CopertiManagementView.swift; sourceTree = "<group>"; };
 		A468957129D9AD1A00328F0F /* CashDesk.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CashDesk.swift; sourceTree = "<group>"; };
 		A468957429D9AD4F00328F0F /* OrdersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrdersView.swift; sourceTree = "<group>"; };
 		A468957729D9AD8E00328F0F /* DiningView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiningView.swift; sourceTree = "<group>"; };
@@ -314,6 +316,7 @@
 				A4E787BD29DAD01B009E35B5 /* ProductsManagerView.swift */,
 				A4E787BE29DAD01B009E35B5 /* UserManagerView.swift */,
 				A4E787BF29DAD01B009E35B5 /* TableManagerView.swift */,
+				A45C275829E163A1005D9BB2 /* CopertiManagementView.swift */,
 				A4917B4629DC1EA90021076C /* CategoryManagerView.swift */,
 			);
 			path = Admin;
@@ -445,6 +448,7 @@
 				A4E787B029DAC425009E35B5 /* TableComponent.swift in Sources */,
 				A4E787CD29DAD034009E35B5 /* IconAppView.swift in Sources */,
 				A4D972E429D97E8300DCC4F7 /* TurniView.swift in Sources */,
+				A45C275929E163A1005D9BB2 /* CopertiManagementView.swift in Sources */,
 				A4D972DD29D97DBE00DCC4F7 /* WrapperView.swift in Sources */,
 				A4E787B429DAC425009E35B5 /* AppInfoComponent.swift in Sources */,
 				A4D972C529D95AF900DCC4F7 /* TableModel.swift in Sources */,
@@ -604,7 +608,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 13.1;
-				MARKETING_VERSION = 0.1.0;
+				MARKETING_VERSION = 0.1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = one.wape.easymanager;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
@@ -647,7 +651,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 13.1;
-				MARKETING_VERSION = 0.1.0;
+				MARKETING_VERSION = 0.1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = one.wape.easymanager;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;

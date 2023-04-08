@@ -47,3 +47,6 @@ struct CopertoStruct : Codable, Identifiable {
     var nomeCoperto: String
     var prezzoCoperto : Double
 }
+extension CopertoStruct {
+    static let empty = CopertoStruct(nomeCoperto: "", prezzoCoperto: 0)
+}

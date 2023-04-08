@@ -50,6 +50,12 @@ struct ProductsManagerView: View {
                             }
                         }
                     }
+                    Section{
+                        NavigationLink("Gestisci le Categorie") {
+                            CategoryManagerView()
+                        }
+                        .foregroundColor(.accentColor)
+                    }
                 }else {
                     List{
                         Section{
@@ -105,6 +111,8 @@ struct ProductsManagerView: View {
                         Text("Nome").bold()
                         TextField("Obbligatorio", text: $prod.productName)
                             .padding(.horizontal, 45)
+                            .keyboardType(.default)
+
                     }
                     Picker("Scegli Categoria", selection: $prod.productCategory) {
                         ForEach(product.categoryList){ category in
@@ -128,6 +136,8 @@ struct ProductsManagerView: View {
                         TextField("Facoltative", text: $prod.productDescription, axis: .vertical)
                             .lineLimit(3, reservesSpace: true)
                             .padding(.horizontal, 50)
+                            .keyboardType(.default)
+
                     }
                 }header: {
                     Text("Informazioni Prodotto")
@@ -172,6 +182,8 @@ struct ProductsManagerView: View {
                         Text("Nome").bold()
                         TextField("Obbligatorio", text: $newVariantName)
                             .padding(.horizontal)
+                            .keyboardType(.default)
+
                     }
                     .padding(.vertical)
                     HStack {
@@ -186,6 +198,8 @@ struct ProductsManagerView: View {
                         TextField("Facoltative", text: $newVariantDescription, axis: .vertical)
                             .lineLimit(3, reservesSpace: true)
                             .padding(.horizontal, 50)
+                            .keyboardType(.default)
+
                     }
                     .padding(.vertical)
                     Spacer()

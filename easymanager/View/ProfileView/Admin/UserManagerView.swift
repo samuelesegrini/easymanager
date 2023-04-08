@@ -135,11 +135,13 @@ struct UserManagerView: View {
                         Text("Nome").bold()
                         TextField("Obbligatorio", text: $name)
                             .padding(.horizontal, 45)
+                            .keyboardType(.default)
                     }
                     HStack{
                         Text("Cognome").bold()
                         TextField("Obbligatorio", text: $surname)
                             .padding(.horizontal)
+                            .keyboardType(.default)
                     }
                     //TODO: Modify email
                     /*
@@ -147,6 +149,7 @@ struct UserManagerView: View {
                         Text("Email").bold()
                         TextField("Obbligatorio", text: $email)
                             .padding(.horizontal, 50)
+                            .keyboardType(.default)
                     }*/
                     HStack {
                         Text("PIN").bold()
@@ -256,16 +259,21 @@ struct UserManagerView: View {
                         Text("Nome").bold()
                         TextField("Obbligatorio", text: $name)
                             .padding(.horizontal, 45)
+                            .keyboardType(.default)
+
                     }
                     HStack{
                         Text("Cognome").bold()
                         TextField("Obbligatorio", text: $surname)
                             .padding(.horizontal)
+                            .keyboardType(.default)
+
                     }
                     HStack {
                         Text("Email").bold()
                         TextField("Obbligatorio", text: $email)
                             .padding(.horizontal, 50)
+                            .keyboardType(.emailAddress)
                     }
                 }header: {
                     Text("Informazioni personali")

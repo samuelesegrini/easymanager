@@ -72,19 +72,24 @@ struct OrderSheetView: View {
         .toolbar {
             ToolbarTitleMenu() {
                 Button {
+                    product.menuChoice = "Listino colazione"
+                } label: {
+                    Text("Listino colazione").font(.subheadline)
+                }
+                Button {
                     product.menuChoice = "Listino pranzo"
                 } label: {
                     Text("Listino pranzo").font(.subheadline)
                 }
                 Button {
+                    product.menuChoice = "Listino aperitivo"
+                } label: {
+                    Text("Listino aperitivo").font(.subheadline)
+                }
+                Button {
                     product.menuChoice = "Listino cena"
                 } label: {
                     Text("Listino cena").font(.subheadline)
-                }
-                Button {
-                    product.menuChoice = "Listino cocktail"
-                } label: {
-                    Text("Listino cocktail").font(.subheadline)
                 }
             }
         }

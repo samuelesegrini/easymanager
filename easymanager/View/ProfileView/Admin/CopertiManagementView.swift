@@ -1,71 +1,75 @@
 //
-//  CategoryManagerView.swift
+//  CopertiManagementView.swift
 //  easymanager
 //
-//  Created by Samuele Segrini on 04/04/23.
+//  Created by Samuele Segrini on 08/04/23.
 //
 
 import SwiftUI
 
-struct CategoryManagerView: View {
-    @EnvironmentObject var product : ProductViewModel
+struct CopertiManagementView: View {
+    @EnvironmentObject var table : TableViewModel
     @Environment(\.dismiss) var dismiss
     
-    @State private var showSaveCategory = false
-    @State private var savecategory = false
+    @State private var showSaveCoperto = false
+    @State private var savecoperto = false
     
     var body: some View {
         VStack{
-            List(product.categoryList){ categoia in
-                Text(categoia.categoryName)
+            List(table.copertoList){ coperto in
+                HStack{
+                    Text(coperto.nomeCoperto)
+                    Spacer()
+                    Text("\(coperto.prezzoCoperto, format: .currency(code: "EUR"))")
+                }
             }
         }
-        .navigationTitle("Gestisci Categorie")
-        .sheet(isPresented: $showSaveCategory){
+        .navigationTitle("Gestisci Coperti")
+        .sheet(isPresented: $showSaveCoperto){
             NavigationStack{
-                AddCategory()
+                AddCoperto()
             }
         }
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
-                    showSaveCategory.toggle()
+                    showSaveCoperto.toggle()
                 } label: {
                     Image(systemName: "plus")
                 }
+
             }
         }
     }
     @ViewBuilder
-    func AddCategory() -> some View {
+    func AddCoperto() -> some View {
         VStack{
             Form{
                 Section{
                     HStack{
-                        Text("Nome Categoria").bold()
-                        TextField("Obbligatorio", text: $product.categoryToModifyOrDelete.categoryName)
+                        Text("Nome Coperto").bold()
+                        TextField("Obbligatorio", text: $table.copertoToModifyOrDelete.nomeCoperto)
                             .padding(.horizontal)
                             .keyboardType(.default)
                     }
                     HStack {
-                        Text("Note").bold()
-                        TextField("Facoltative", text: $product.categoryToModifyOrDelete.categoryDescription, axis: .vertical)
-                            .lineLimit(3, reservesSpace: true)
-                            .padding(.horizontal, 50)
-                            .keyboardType(.default)
+                        Text("Prezzo Coperto").bold()
+                        TextField("Obbligatorio", value: $table.copertoToModifyOrDelete.prezzoCoperto, format: .currency(code: "EUR"))
+                            .padding(.horizontal)
+                            .keyboardType(.decimalPad)
                     }
                 }header: {
-                    Text("Informazioni Categoria")
+                    Text("Informazioni Coperto")
                 }
                 Section{
-                    Toggle("Vuoi salvare la Categoria?", isOn: $savecategory)
+                    Toggle("Vuoi salvare il Coperto?", isOn: $savecoperto)
                 }
             }
             .navigationTitle("Aggiungi Categoria")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
-                        showSaveCategory = false
+                        showSaveCoperto = false
                     } label: {
                         Text("Annulla")
                     }
@@ -73,7 +77,7 @@ struct CategoryManagerView: View {
             }
             Spacer()
             Button {
-                product.addCategory()
+                table.addCoperto()
                 dismiss()
             } label: {
                 ZStack {
@@ -86,16 +90,16 @@ struct CategoryManagerView: View {
                     .foregroundColor(.white)
                 }
             }
-            .disabled(!savecategory)
+            .disabled(!savecoperto)
             .padding()
             .padding(.horizontal)
         }
     }
 }
 
-struct CategoryManagerView_Previews: PreviewProvider {
+struct CopertiManagementView_Previews: PreviewProvider {
     static var previews: some View {
-        CategoryManagerView()
-            .environmentObject(ProductViewModel())
+        CopertiManagementView()
+            .environmentObject(TableViewModel())
     }
 }

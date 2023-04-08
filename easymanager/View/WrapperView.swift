@@ -43,7 +43,12 @@ struct WrapperView: View {
                 .navigationSplitViewColumnWidth(min: 200, ideal: 300, max: 600)
                 .background(.ultraThinMaterial)
             } detail: {
-                
+                if !auth.utente.userRoles.filter({ $0 == "pos"}).isEmpty {
+                    CashDesk()
+                    
+                }else if !auth.utente.userRoles.filter({$0 == "cameriere"}).isEmpty {
+                    OrdersView()
+                }
             }
         }else {
             TabView {

@@ -49,6 +49,10 @@ extension OrderViewModel {
                                 // A OrderStruct value was successfully initialized from the DocumentSnapshot.
                                 self?.errorMessage = nil
                                 
+                                if list.id == "prova" {
+                                    return nil
+                                }
+                                
                                 return list
                             case .failure(let error):
                                 // A OrderStruct value could not be initialized from the DocumentSnapshot.
@@ -75,7 +79,9 @@ extension OrderViewModel {
         do{
             try db.collection("ordine").addDocument(from: orderToModifyOrDelete)
             self.fetchAndMap()
-            orderToModifyOrDelete = OrderStruct.empty
+            orderToModifyOrDelete = orderList.first { o in
+                o.orderFood == orderToModifyOrDelete.orderFood && o.orderSenderID == orderToModifyOrDelete.orderSenderID && o.orderTable == orderToModifyOrDelete.orderTable && o.orderTime == orderToModifyOrDelete.orderTime && o.orderTotalPrice == orderToModifyOrDelete.orderTotalPrice
+            } ?? OrderStruct.empty
             errorMessage = ""
         }catch{
             errorMessage = error.localizedDescription
@@ -83,17 +89,16 @@ extension OrderViewModel {
         }
     }
     func deleteData(order: OrderStruct){
-        let id = orderList.first { ord in
-            ord.orderSenderID == order.orderSenderID && ord.orderTable == order.orderTable && ord.orderTime == order.orderTime
-        }?.id ?? ""
-        db.collection("ordine").document(id).delete { error in
-            if error == nil {
-                DispatchQueue.main.async {
-                    self.orderList.removeAll{ ord in
-                        return ord.id == order.id
-                    }
+        orderToModifyOrDelete = orderList.first { o in
+            o.orderFood == order.orderFood && o.orderSenderID == order.orderSenderID && o.orderTable == order.orderTable && o.orderTime == order.orderTime && o.orderTotalPrice == order.orderTotalPrice
+        } ?? OrderStruct.empty
+        
+        if orderToModifyOrDelete.id != "" {
+            db.collection("ordine").document(orderToModifyOrDelete.id!).delete { error in
+                if error == nil {
+                    self.orderToModifyOrDelete = OrderStruct.empty
+                    self.fetchAndMap()
                 }
-                self.fetchAndMap()
             }
         }
     }

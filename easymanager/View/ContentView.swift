@@ -22,6 +22,9 @@ struct ContentView: View {
                     case .unauthenticated :
                         OnBoardingView()
                             .tint(ThemeManager.themes[theme].accentColor)
+                    case .payement :
+                        Text("")
+                            .tint(ThemeManager.themes[theme].accentColor)
                     }
                 }
             }
