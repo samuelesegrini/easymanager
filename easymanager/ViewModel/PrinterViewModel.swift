@@ -184,7 +184,10 @@ class PrinterViewModel : NSObject, ObservableObject {
                 foodTotal *= food.foodQuantity
                 
                 let maxLenght = 46
-                let row = "\(food.foodQuantity)x  \(food.foodName)  \(food.foodIva)%\(foodTotal)€"
+
+                let string = String(format: "%.2f", foodTotal)
+
+                let row = "\(food.foodQuantity)x  \(food.foodName)  \(food.foodIva)%€ \(string)"
                 var output = ""
                 
                 let percentIndex = row.firstIndex(of: "%") ?? row.startIndex
@@ -205,9 +208,9 @@ class PrinterViewModel : NSObject, ObservableObject {
                 )
             }
             let maxLenght = 46
-            let string = total.formatted(.number)
+            let string = String(format: "%.2f", total)
             
-            let row = "TOTALE\(string)€"
+            let row = "TOTALE€ \(string)"
             
             let totaleIndex = row.range(of: "TOTALE") ?? row.startIndex..<row.startIndex
             let distance = totaleIndex.upperBound
@@ -219,7 +222,7 @@ class PrinterViewModel : NSObject, ObservableObject {
             let rightSpaces = String(repeating: " ", count: rightSpacesCount)
             
             let totaleString = "\(row.prefix(upTo: distance))\(leftSpaces)\(rightSpaces)\(row.suffix(from: distance))"
-            
+            print(totaleString)
             xmlString.append("""
                    <printNormal operator=\"\(user.userNOperator)\" font=\"1\" data=\"\" comment=\"Add blank line (whitespace)\" />
                    <printNormal operator=\"\(user.userNOperator)\" font=\"4\" data=\"\(totaleString)\"/>
