@@ -27,7 +27,6 @@ class ProductViewModel: ObservableObject, Identifiable {
     @Published var productToModifyOrDelete = ProductsStruct.empty
     @Published var categoryToModifyOrDelete = CategoryStruct.empty
     
-    @Published var menuChoice = "Listino pranzo"
     @Published var copiaProdotto = ProductsStruct.empty
 }
 

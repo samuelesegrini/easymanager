@@ -89,30 +89,38 @@ extension OrderViewModel {
         }
     }
     func deleteData(order: OrderStruct){
-        orderToModifyOrDelete = orderList.first { o in
-            o.orderFood == order.orderFood && o.orderSenderID == order.orderSenderID && o.orderTable == order.orderTable && o.orderTime == order.orderTime && o.orderTotalPrice == order.orderTotalPrice
-        } ?? OrderStruct.empty
+        orderToModifyOrDelete = order
+        orderToModifyOrDelete.id = orderList.first(where: { o in
+            o.orderFood == orderToModifyOrDelete.orderFood && o.orderSenderID == orderToModifyOrDelete.orderSenderID && o.orderTable == orderToModifyOrDelete.orderTable
+        })?.id
         
+        print(orderToModifyOrDelete)
         if orderToModifyOrDelete.id != "" {
-            db.collection("ordine").document(orderToModifyOrDelete.id!).delete { error in
+            db.collection("ordine").document(orderToModifyOrDelete.id ?? "").delete { error in
                 if error == nil {
                     self.orderToModifyOrDelete = OrderStruct.empty
                     self.fetchAndMap()
+                    print("Successo nell'eliminare l'ordine")
                 }
             }
         }
     }
     func updateData(itemToUpdate: OrderStruct){
-        if let id = itemToUpdate.id {
+        orderToModifyOrDelete = itemToUpdate
+        orderToModifyOrDelete.id = orderList.first(where: { o in
+            o.orderSenderID == orderToModifyOrDelete.orderSenderID && o.orderTable == orderToModifyOrDelete.orderTable && o.orderTime == orderToModifyOrDelete.orderTime
+        })?.id
+        
+        if let id = orderToModifyOrDelete.id {
             let docRef = db.collection("ordine").document(id)
             do {
-                try docRef.setData(from: itemToUpdate)
+                try docRef.setData(from: orderToModifyOrDelete)
+                self.orderToModifyOrDelete = OrderStruct.empty
                 self.fetchAndMap()
             }
             catch {
                 print(error)
             }
-
         }
     }
     func addFood(id : String, food : [Food]){
@@ -133,6 +141,16 @@ extension OrderViewModel {
                     self.errorMessage = String(error.localizedDescription)
                 }
             }
+        }
+    }
+    func saveOrder(){
+        do{
+            try db.collection("salvataggioOrdine").addDocument(from: orderToModifyOrDelete)
+            self.fetchAndMap()
+            errorMessage = ""
+        }catch{
+            errorMessage = error.localizedDescription
+            orderToModifyOrDelete = OrderStruct.empty
         }
     }
 }

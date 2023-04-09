@@ -17,14 +17,13 @@ struct ProductsStruct: Identifiable, Codable {
     var productDescription: String
     var productPrice: Double
     var productFavorite: Bool
-    var productMenu: String
     var productCategory: String
     var productIva: String
     var productVariants: [Variants]
 }
 
 extension ProductsStruct {
-    static let empty = ProductsStruct(userRestaurantID: "N1VqnVlgKcc1B7MuFBM0", productName: "", productDescription: "", productPrice: 0, productFavorite: false, productMenu: "", productCategory: "", productIva: "", productVariants: [])
+    static let empty = ProductsStruct(userRestaurantID: "N1VqnVlgKcc1B7MuFBM0", productName: "", productDescription: "", productPrice: 0, productFavorite: false,  productCategory: "", productIva: "", productVariants: [])
 }
 
 

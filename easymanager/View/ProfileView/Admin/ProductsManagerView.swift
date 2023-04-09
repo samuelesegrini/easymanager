@@ -29,7 +29,6 @@ struct ProductsManagerView: View {
                 if sizeClass != .compact{
                     Table(product.productList){
                         TableColumn("Nome", value: \.productName)
-                        TableColumn("Menu", value: \.productMenu)
                         TableColumn("Categoria", value: \.productCategory)
                         
                         TableColumn("Prezzo") { item in
@@ -143,12 +142,6 @@ struct ProductsManagerView: View {
                     Text("Informazioni Prodotto")
                 }
                 Section{
-                    Picker("Scegli il listino", selection: $prod.productMenu) {
-                        Text("Listino Pranzo").tag(0)
-                        Text("Listino Cena").tag(1)
-                        Text("Listino Aperitivo").tag(2)
-                        Text("Listino Colazione").tag(3)
-                    }
                     Toggle("Vuoi che sia uno dei prodotti preferiti?", isOn: $prod.productFavorite)
                 }
                 
@@ -183,7 +176,6 @@ struct ProductsManagerView: View {
                         TextField("Obbligatorio", text: $newVariantName)
                             .padding(.horizontal)
                             .keyboardType(.default)
-
                     }
                     .padding(.vertical)
                     HStack {

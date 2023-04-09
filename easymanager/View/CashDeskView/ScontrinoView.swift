@@ -16,7 +16,6 @@ struct ScontrinoView: View {
         
     @State private var selectedMain = "Prodotti"
     @State private var selectedTable = ""
-    @State private var showingProduct : ProductsStruct? = nil
     
     @State private var orderSheet : OrderStruct? = nil
     @State private var showingTable = false
@@ -162,9 +161,10 @@ struct ScontrinoView: View {
                     ordine.orderToModifyOrDelete = ordine.ordineVuoto
                     ordine.addData()
                     
-                    orderSheet = ordine.orderToModifyOrDelete
-                    ordine.orderToModifyOrDelete = OrderStruct.empty
+                    ordine.ordineVuoto = ordine.filterOrderbyTable(tavolo: ordine.ordineVuoto.orderTable)
                     
+                    orderSheet = ordine.ordineVuoto
+                    ordine.orderToModifyOrDelete = OrderStruct.empty
                 } label: {
                     ZStack {
                         Rectangle()
@@ -181,8 +181,6 @@ struct ScontrinoView: View {
                 .sheet(item: $orderSheet) { order in
                     VStack {
                         CheckOut(order: ordine.ordineVuoto)
-                    }.onAppear{
-                        ordine.ordineVuoto = order
                     }
                 }
             }

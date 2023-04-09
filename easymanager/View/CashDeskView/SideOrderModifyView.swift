@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct orderModify : View {
+
     @EnvironmentObject var auth: AuthenticationViewModel
     @EnvironmentObject var ordine : OrderViewModel
     @EnvironmentObject var prodotto : ProductViewModel
@@ -144,6 +145,8 @@ struct orderModify : View {
     }
 }
 struct sheetModify : View {
+    @Environment(\.horizontalSizeClass) var sizeClass
+
     @EnvironmentObject var dataSource: DataSource
     @EnvironmentObject var ordine : OrderViewModel
     
@@ -173,30 +176,48 @@ struct sheetModify : View {
                     Divider()
                     
                     Stepper("Scegli la quantità : \(ordine.prodottoModify.foodQuantity, specifier: "%.0f")", value: $ordine.prodottoModify.foodQuantity).font(.subheadline)
-                    
-                    Spacer()
-                }
-                VStack (alignment: .leading){
-                    
-                    List {
-                        ForEach($ordine.prodottoModify.foodVariants, id: \.self){ $variant in
-                            Button {
-                                variant.variantChecked?.toggle()
-                            } label: {
-                                HStack {
-                                    Image(systemName: variant.variantChecked == true ? "checkmark.circle.fill" :"circle")
-                                    Text(variant.variantName)
-                                        .font(.callout)
-                                    Text("\(variant.variantPrice,format: .currency(code: "EUR"))")
+                    if sizeClass == .compact {
+                        List {
+                            ForEach($ordine.prodottoModify.foodVariants, id: \.self){ $variant in
+                                Button {
+                                    variant.variantChecked?.toggle()
+                                } label: {
+                                    HStack {
+                                        Image(systemName: variant.variantChecked == true ? "checkmark.circle.fill" :"circle")
+                                        Text(variant.variantName)
+                                            .font(.callout)
+                                        Text("\(variant.variantPrice,format: .currency(code: "EUR"))")
+                                    }
                                 }
                             }
+                            .listRowSeparator(.hidden)
                         }
-                        .listRowSeparator(.hidden)
+                        .listStyle(.plain)
                     }
-                    .listStyle(.plain)
                     Spacer()
                 }
-                .frame(width: 250)
+                if sizeClass != .compact{
+                    VStack (alignment: .leading){
+                        List {
+                            ForEach($ordine.prodottoModify.foodVariants, id: \.self){ $variant in
+                                Button {
+                                    variant.variantChecked?.toggle()
+                                } label: {
+                                    HStack {
+                                        Image(systemName: variant.variantChecked == true ? "checkmark.circle.fill" :"circle")
+                                        Text(variant.variantName)
+                                            .font(.callout)
+                                        Text("\(variant.variantPrice,format: .currency(code: "EUR"))")
+                                    }
+                                }
+                            }
+                            .listRowSeparator(.hidden)
+                        }
+                        .listStyle(.plain)
+                        Spacer()
+                    }
+                    .frame(maxWidth: 250)
+                }
             }
             .padding()
             Button {

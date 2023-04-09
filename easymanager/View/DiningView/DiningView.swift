@@ -118,7 +118,6 @@ struct DiningView: View {
     @ViewBuilder
     func TableOccupato(_ id : String) -> some View {
         ForEach(table.tableList.filter{$0.id == id}){ table in
-            
             VStack(alignment: .leading){
                 HStack{
                     Text("Tavolo \(table.tableName)").font(.headline)

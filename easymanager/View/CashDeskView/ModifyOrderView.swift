@@ -24,7 +24,6 @@ struct ModifyOrderView: View {
                     sheetOrdine(id: product.id ?? "").onAppear{ prodotto.copiaProdotto = product}
                 }
             }
-            .navigationTitle(prodotto.menuChoice)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 //TODO: calculator view
@@ -52,33 +51,12 @@ struct ModifyOrderView: View {
                     }
                     .foregroundColor(.secondary)
                 }
-                ToolbarTitleMenu() {
-                    Button {
-                        prodotto.menuChoice = "Listino pranzo"
-                    } label: {
-                        Text("Listino pranzo").font(.subheadline)
-                    }
-                    Button {
-                        prodotto.menuChoice = "Listino cena"
-                    } label: {
-                        Text("Listino cena").font(.subheadline)
-                    }
-                    Button {
-                        prodotto.menuChoice = "Listino aperitivo"
-                    } label: {
-                        Text("Listino aperitivo").font(.subheadline)
-                    }
-                    Button {
-                        prodotto.menuChoice = "Listino colazione"
-                    } label: {
-                        Text("Listino colazione").font(.subheadline)
-                    }
-                }
             }
     }
 }
 
 struct sheetOrdine : View {
+    @Environment(\.horizontalSizeClass) var sizeClass
     @EnvironmentObject var dataSource: DataSource
     
     @EnvironmentObject var ordine : OrderViewModel
@@ -118,31 +96,51 @@ struct sheetOrdine : View {
                         .padding(.vertical)
                     Divider()
                     Stepper("Scegli la quantità : \(quant, specifier: "%.0f")", value: $quant).font(.subheadline)
-                    Spacer()
-                }
-                VStack (alignment: .leading){
-                    
-                    List {
-                        ForEach($prodotto.copiaProdotto.productVariants, id: \.self){ $variant in
-                            Button {
-                                variant.variantChecked?.toggle()
-                            } label: {
-                                HStack {
-                                    Image(systemName: variant.variantChecked == true ? "checkmark.circle.fill" :"circle")
-                                    Text(variant.variantName)
-                                        .font(.footnote)
-                                    Text("\(variant.variantPrice,format: .currency(code: "EUR"))")
-                                        .hAllign(.trailing)
-                                        .foregroundColor(.secondary)
+                    if sizeClass == .compact {
+                        List {
+                            ForEach($ordine.prodottoModify.foodVariants, id: \.self){ $variant in
+                                Button {
+                                    variant.variantChecked?.toggle()
+                                } label: {
+                                    HStack {
+                                        Image(systemName: variant.variantChecked == true ? "checkmark.circle.fill" :"circle")
+                                        Text(variant.variantName)
+                                            .font(.callout)
+                                        Text("\(variant.variantPrice,format: .currency(code: "EUR"))")
+                                    }
                                 }
                             }
+                            .listRowSeparator(.hidden)
                         }
-                        .listRowSeparator(.hidden)
+                        .listStyle(.plain)
                     }
-                    .listStyle(.plain)
                     Spacer()
                 }
-                .frame(width: 250)
+                if sizeClass != .compact{
+                    VStack (alignment: .leading){
+                        
+                        List {
+                            ForEach($prodotto.copiaProdotto.productVariants, id: \.self){ $variant in
+                                Button {
+                                    variant.variantChecked?.toggle()
+                                } label: {
+                                    HStack {
+                                        Image(systemName: variant.variantChecked == true ? "checkmark.circle.fill" :"circle")
+                                        Text(variant.variantName)
+                                            .font(.footnote)
+                                        Text("\(variant.variantPrice,format: .currency(code: "EUR"))")
+                                            .hAllign(.trailing)
+                                            .foregroundColor(.secondary)
+                                    }
+                                }
+                            }
+                            .listRowSeparator(.hidden)
+                        }
+                        .listStyle(.plain)
+                        Spacer()
+                    }
+                    .frame(width: 250)
+                }
             }
             .padding()
         }

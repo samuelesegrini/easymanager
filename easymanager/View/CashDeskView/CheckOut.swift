@@ -145,9 +145,8 @@ struct CheckOut: View {
                     
                 }else {
                     Button {
-                        ordine.ordineVuoto = OrderStruct.empty
-                        
                         printerManager.sendXMLRequest(receipt: order, subtotale: subtotale, pagamento: [], user: auth.utente)
+                        ordine.ordineVuoto = OrderStruct.empty
                         dismiss()
                     } label: {
                         ZStack {
@@ -373,6 +372,7 @@ struct CheckOut: View {
                     return true
                 }
                 pagatoDef = sum
+                print(pagatoDef-subtotale)
             } label: {
                 HStack{
                     Image(systemName: "square.and.arrow.down")
@@ -422,14 +422,15 @@ struct CheckOut: View {
             .padding()
             .frame(height: 150)
             
-            if (subtotale-pagatoDef)>0 {
+
+            if (subtotale - pagatoDef) > Double(0) {
                 Button {
                 } label: {
                     ZStack {
                         Rectangle()
                             .cornerRadius(15)
                         HStack{
-                            Text("Aggiungi altri Pagamenti per \(subtotale-pagatoDef, format: .currency(code: "EUR"))")
+                            Text("Aggiungi altri Pagamenti per \((subtotale-pagatoDef), format: .currency(code: "EUR"))")
                         }
                         .foregroundColor(.white)
                         .font(.headline)
@@ -441,7 +442,6 @@ struct CheckOut: View {
                 .padding(.bottom)
             }else{
                 Button {
-                    
                     //If payement is for all the order
                     if order.orderTotalPrice == subtotale {
                         printerManager.sendXMLRequest(receipt: order, subtotale: subtotale, pagamento: payement, user: auth.utente)
@@ -459,9 +459,15 @@ struct CheckOut: View {
                         }
                         
                         if ordine.selectedOption == "Tavolo"{
+                            ordine.orderToModifyOrDelete = ordine.ordineTavolo
+                            ordine.saveOrder()
+
                             ordine.deleteData(order: ordine.ordineTavolo)
                             dismiss()
                         }else{
+                            ordine.orderToModifyOrDelete = ordine.ordineVuoto
+                            ordine.saveOrder()
+
                             ordine.deleteData(order: ordine.ordineVuoto)
                             dismiss()
                         }
@@ -485,6 +491,8 @@ struct CheckOut: View {
                             }
                         }else{
                             if numeroConti > 1 {
+                                numeroConti -= 1
+
                                 if ordine.selectedOption == "Tavolo"{
                                     order.orderTotalPrice -= subtotale
                                     ordine.ordineTavolo.orderTotalPrice -= subtotale
@@ -492,7 +500,6 @@ struct CheckOut: View {
                                     order.orderTotalPrice -= subtotale
                                     ordine.ordineVuoto.orderTotalPrice -= subtotale
                                 }
-                                numeroConti -= 1
                             }else{
                                 var t = table.tableList.first{ t in
                                     t.tableName == order.orderTable && t.waiterID == order.orderSenderID
@@ -534,10 +541,6 @@ struct CheckOut: View {
                 .frame(height: 70)
                 .padding(.horizontal,60)
                 .disabled(payement.isEmpty)
-                //Button("Annullo Ultimo Scontrino") {
-                    
-                //}
-                //.padding(.bottom)
             }
         }
         .padding()

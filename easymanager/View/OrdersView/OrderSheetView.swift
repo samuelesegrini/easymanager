@@ -42,6 +42,7 @@ struct OrderSheetView: View {
                                 order.orderToModifyOrDelete = order.ordineVuoto
                                 
                                 order.addData()
+                                order.orderToModifyOrDelete = OrderStruct.empty
                                 order.ordineVuoto = OrderStruct.empty
                                 dismiss()
                             }else {
@@ -67,32 +68,7 @@ struct OrderSheetView: View {
                 }
             }
         }
-        .navigationTitle(product.menuChoice)
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarTitleMenu() {
-                Button {
-                    product.menuChoice = "Listino colazione"
-                } label: {
-                    Text("Listino colazione").font(.subheadline)
-                }
-                Button {
-                    product.menuChoice = "Listino pranzo"
-                } label: {
-                    Text("Listino pranzo").font(.subheadline)
-                }
-                Button {
-                    product.menuChoice = "Listino aperitivo"
-                } label: {
-                    Text("Listino aperitivo").font(.subheadline)
-                }
-                Button {
-                    product.menuChoice = "Listino cena"
-                } label: {
-                    Text("Listino cena").font(.subheadline)
-                }
-            }
-        }
     }
 }
 

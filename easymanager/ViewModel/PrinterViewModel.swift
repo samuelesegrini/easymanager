@@ -24,7 +24,7 @@ class PrinterViewModel : NSObject, ObservableObject {
         let urlString = "http://192.168.001.150/cgi-bin/fpmate.cgi"
         guard let url = URL(string: urlString) else {
             print("Invalid URL")
-            return
+            return 
         }
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -36,7 +36,9 @@ class PrinterViewModel : NSObject, ObservableObject {
         """
         
         xmlString.append( """
+            <printerFiscalReport>
                 <printXZReport operator=\"\(user.userNOperator)\" timeout=\"1000\" />
+            </printerFiscalReport>
             """
         )
         xmlString.append("""
@@ -75,7 +77,9 @@ class PrinterViewModel : NSObject, ObservableObject {
         """
         
         xmlString.append( """
+                <printerFiscalReport>
                 <printXReport operator=\"\(user.userNOperator)\" />
+                </printerFiscalReport>
             """
         )
         xmlString.append("""
@@ -158,24 +162,24 @@ class PrinterViewModel : NSObject, ObservableObject {
             <?xml version=\"1.0\" encoding=\"utf-8\" ?>
                 <s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\">
                 <s:Body>
-                <printerNonFiscalReceipt>
-                <beginNonFiscal operator=\"\(user.userNOperator)\" />
-
+                <printerNonFiscal>
+                <beginNonFiscal operator=\"\(user.userNOperator)\"/>
+                <printNormal operator=\"\(user.userNOperator)\" font=\"1\" data=\"\" comment=\"Add blank line (whitespace)\" />
             """
             for food in receipt.orderFood {
                 xmlString.append("""
-                                    <printNormal operator="\(user.userNOperator)" data="\(food.foodQuantity)X \(food.foodName)      \(food.foodIva)% " />
-                                    <printNormal operator=\"\(user.userNOperator)\" font=\"1\" data=\"\" comment=\"Add blank line (whitespace)\" />
+                                    <printNormal operator=\"\(user.userNOperator)\" data=\"\(food.foodQuantity)X \(food.foodName) \(food.foodIva)%\" />
                                  """
                 )
             }
             xmlString.append("""
                 <endNonFiscal operator=\"\(user.userNOperator)\" />
-                </printerFiscalReceipt>
+                </printerNonFiscal>
                 </s:Body>
                 </s:Envelope>
                 """
             )
+            print(xmlString)
         case .scontrinoFiscale:
             xmlString = """
             <?xml version=\"1.0\" encoding=\"utf-8\" ?>
@@ -201,12 +205,12 @@ class PrinterViewModel : NSObject, ObservableObject {
             }
             for pay in pagamento{
                 xmlString.append( """
-                                <printRecTotal operator=\"\(user.userNOperator)\" description=\"DA PAGARE\" payment=\"\(pay.pagamentoImporto)\" paymentType=\"\(pay.pagamentoTipo)\" index=\"\(pay.pagamentoTipo == 0 ? 0 : pay.pagamentoTipo == 1 ? 0 : pay.pagamentoTipo == 2 ? 1 : pay.pagamentoTipo == 3 ? 1 : 0)\" />"
+                                <printRecTotal operator=\"\(user.userNOperator)\" description=\"DA PAGARE\" payment=\"\(pay.pagamentoImporto)\" paymentType=\"\(pay.pagamentoTipo)\" index=\"\(pay.pagamentoTipo == 0 ? 0 : pay.pagamentoTipo == 1 ? 0 : pay.pagamentoTipo == 2 ? 1 : pay.pagamentoTipo == 3 ? 1 : 0)\"/>
                                 """
                 )
             }
             xmlString.append("""
-                <endFiscalReceipt operator=\"\(user.userNOperator)\" />
+                <endFiscalReceipt operator=\"\(user.userNOperator)\"/>
                 </printerFiscalReceipt>
                 </s:Body>
                 </s:Envelope>

@@ -18,7 +18,7 @@ struct OrdersView: View {
     @State private var showingProduct : ProductsStruct? = nil
     @State private var noteTavolo = ""
     @State private var coperto : Double = 0
-    @State private var numeroCop = 0
+    @State private var numeroCop = 1
     
     private let adaptiveColumns = [
         GridItem(.adaptive(minimum: 90))
@@ -300,6 +300,7 @@ struct OrdersView: View {
     @ViewBuilder
     func TableLibero(_ id : String) -> some View {
         ForEach(tavolo.tableList.filter{$0.id == id}){ table in
+            let postiMax = table.tableSeats
             VStack(alignment: .leading){
                 HStack{
                     Text("Tavolo \(table.tableName)").font(.headline)
@@ -339,7 +340,7 @@ struct OrdersView: View {
                         }
                         HStack{
                             Picker("Numero Coperti da Inserire", selection: $numeroCop) {
-                                ForEach(1..<40, id: \.self){ seat in
+                                ForEach(1..<postiMax, id: \.self){ seat in
                                     Text("\(seat)").tag(seat)
                                 }
                             }

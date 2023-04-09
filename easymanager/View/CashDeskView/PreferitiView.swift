@@ -25,7 +25,6 @@ struct PreferitiView: View {
                     sheetOrdine(id : product.id ?? "").onAppear{ preferiti.copiaProdotto = product }
                 }
             }
-            .navigationTitle(prodotto.menuChoice)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -51,28 +50,6 @@ struct PreferitiView: View {
                         }
                     }
                     .foregroundColor(.accentColor)
-                }
-                ToolbarTitleMenu() {
-                    Button {
-                        prodotto.menuChoice = "Listino pranzo"
-                    } label: {
-                        Text("Listino pranzo").font(.subheadline)
-                    }
-                    Button {
-                        prodotto.menuChoice = "Listino cena"
-                    } label: {
-                        Text("Listino cena").font(.subheadline)
-                    }
-                    Button {
-                        prodotto.menuChoice = "Listino aperitivo"
-                    } label: {
-                        Text("Listino aperitivo").font(.subheadline)
-                    }
-                    Button {
-                        prodotto.menuChoice = "Listino colazione"
-                    } label: {
-                        Text("Listino colazione").font(.subheadline)
-                    }
                 }
             }
 
