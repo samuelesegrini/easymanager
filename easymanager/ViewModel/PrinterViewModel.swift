@@ -142,6 +142,7 @@ class PrinterViewModel : NSObject, ObservableObject {
     }
     func sendXMLRequest(receipt: OrderStruct, subtotale : Double, pagamento : [pagamento], user : UserStruct) {
         var ricevuta = receipt
+        
         ricevuta.orderFood.removeAll { food in
             food.foodReversed == true
         }
@@ -164,14 +165,66 @@ class PrinterViewModel : NSObject, ObservableObject {
                 <s:Body>
                 <printerNonFiscal>
                 <beginNonFiscal operator=\"\(user.userNOperator)\"/>
-                <printNormal operator=\"\(user.userNOperator)\" font=\"1\" data=\"\" comment=\"Add blank line (whitespace)\" />
             """
-            for food in receipt.orderFood {
+            
+            var total : Double = 0
+            
+            for food in ricevuta.orderFood {
+                var foodTotal = 0.0
+                for variants in food.foodVariants {
+                    if variants.variantChecked  ?? false{
+                        total += variants.variantPrice
+                        foodTotal += variants.variantPrice
+                    }
+                }
+                total += food.foodPrice
+                foodTotal += food.foodPrice
+                
+                total *= food.foodQuantity
+                foodTotal *= food.foodQuantity
+                
+                let maxLenght = 46
+                let row = "\(food.foodQuantity)x  \(food.foodName)  \(food.foodIva)%\(foodTotal)€"
+                var output = ""
+                
+                let percentIndex = row.firstIndex(of: "%") ?? row.startIndex
+                let distance = row.distance(from: row.startIndex, to: percentIndex)
+                
+                let leftSpacesCount = max(distance, 0)
+                let rightSpacesCount = max(maxLenght - row.count - leftSpacesCount - 1, 0)
+
+                let leftSpaces = String(repeating: " ", count: leftSpacesCount)
+                let rightSpaces = String(repeating: " ", count: rightSpacesCount)
+                
+                output = "\(row.prefix(upTo: percentIndex))%\(leftSpaces)\(rightSpaces)\(row.suffix(from: row.index(after: percentIndex)))"
+                
+                print(output)
                 xmlString.append("""
-                                    <printNormal operator=\"\(user.userNOperator)\" data=\"\(food.foodQuantity)X \(food.foodName) \(food.foodIva)%\" />
+                                    <printNormal operator=\"\(user.userNOperator)\" data=\"\(output)\" />
                                  """
                 )
             }
+            let maxLenght = 46
+            let string = total.formatted(.number)
+            
+            let row = "TOTALE\(string)€"
+            
+            let totaleIndex = row.range(of: "TOTALE") ?? row.startIndex..<row.startIndex
+            let distance = totaleIndex.upperBound
+            
+            let leftSpacesCount = max(row.distance(from: row.startIndex, to: distance), 0)
+            let rightSpacesCount = max(maxLenght - row.count - leftSpacesCount, 0)
+
+            let leftSpaces = String(repeating: " ", count: leftSpacesCount)
+            let rightSpaces = String(repeating: " ", count: rightSpacesCount)
+            
+            let totaleString = "\(row.prefix(upTo: distance))\(leftSpaces)\(rightSpaces)\(row.suffix(from: distance))"
+            
+            xmlString.append("""
+                   <printNormal operator=\"\(user.userNOperator)\" font=\"1\" data=\"\" comment=\"Add blank line (whitespace)\" />
+                   <printNormal operator=\"\(user.userNOperator)\" font=\"4\" data=\"\(totaleString)\"/>
+                """
+            )
             xmlString.append("""
                 <endNonFiscal operator=\"\(user.userNOperator)\" />
                 </printerNonFiscal>
@@ -188,7 +241,7 @@ class PrinterViewModel : NSObject, ObservableObject {
                 <printerFiscalReceipt>
                 <beginFiscalReceipt operator=\"\(user.userNOperator)\" />
             """
-            for food in receipt.orderFood {
+            for food in ricevuta.orderFood {
                 var department = 1
                 if food.foodIva == "22"{
                     department = 1
@@ -196,18 +249,35 @@ class PrinterViewModel : NSObject, ObservableObject {
                     department = 2
                 }else if food.foodIva == "4"{
                     department = 3
-                    
-                    xmlString.append("""
+                }
+                
+                xmlString.append("""
                                     <printRecItem operator=\"\(user.userNOperator)\" description=\"\(food.foodName)\" quantity=\"\(food.foodQuantity)\" unitPrice=\"\(food.foodPrice)\" department=\"\(department)\"/>
                                  """
-                    )
-                }
+                )
             }
             for pay in pagamento{
-                xmlString.append( """
-                                <printRecTotal operator=\"\(user.userNOperator)\" description=\"DA PAGARE\" payment=\"\(pay.pagamentoImporto)\" paymentType=\"\(pay.pagamentoTipo)\" index=\"\(pay.pagamentoTipo == 0 ? 0 : pay.pagamentoTipo == 1 ? 0 : pay.pagamentoTipo == 2 ? 1 : pay.pagamentoTipo == 3 ? 1 : 0)\"/>
-                                """
-                )
+                if pay.pagamentoTipo == 0 {
+                    xmlString.append( """
+                                    <printRecTotal operator=\"\(user.userNOperator)\" description=\"Contante\" payment=\"\(pay.pagamentoImporto)\" paymentType=\"\(pay.pagamentoTipo)\" index=\"\(0)\"/>
+                                    """
+                    )
+                } else if pay.pagamentoTipo == 1{
+                    xmlString.append( """
+                                    <printRecTotal operator=\"\(user.userNOperator)\" description=\"Assegno\" payment=\"\(pay.pagamentoImporto)\" paymentType=\"\(pay.pagamentoTipo)\" index=\"\(0)\"/>
+                                    """
+                    )
+                }else if pay.pagamentoTipo == 2 {
+                    xmlString.append( """
+                                    <printRecTotal operator=\"\(user.userNOperator)\" description=\"Pagamento Elettronico\" payment=\"\(pay.pagamentoImporto)\" paymentType=\"\(pay.pagamentoTipo)\" index=\"\(1)\"/>
+                                    """
+                    )
+                }else if pay.pagamentoTipo == 3 {
+                    xmlString.append( """
+                                    <printRecTotal operator=\"\(user.userNOperator)\" description=\"Ticket\" payment=\"\(pay.pagamentoImporto)\" paymentType=\"\(pay.pagamentoTipo)\" index=\"\(1)\"/>
+                                    """
+                    )
+                }
             }
             xmlString.append("""
                 <endFiscalReceipt operator=\"\(user.userNOperator)\"/>
