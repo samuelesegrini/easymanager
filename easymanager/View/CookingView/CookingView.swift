@@ -79,32 +79,33 @@ struct CookingView: View {
                                     
                                     Spacer()
                                 }
-                                Text("\(food.foodPrice * food.foodQuantity,format: .currency(code: "EUR"))") .strikethrough(food.foodReversed).font(.headline).foregroundColor(.accentColor).bold()
+                                Text("\(order.totalFood(food: food),format: .currency(code: "EUR"))") .strikethrough(food.foodReversed).font(.headline).foregroundColor(.accentColor).bold()
+
                             }
                             if  count != 0 {
-                                VStack(alignment: .leading, spacing: 0) {
-                                    HStack(spacing: 0){
-                                        Divider()
-                                        VStack(alignment: .leading, spacing: 0){
-                                            Divider()
-                                        }.frame(width: 20)
-                                        ScrollView(.horizontal, showsIndicators: false) {
-                                            HStack{
-                                                ForEach(food.foodVariants, id: \.self){ variant in
-                                                    if variant.variantChecked ?? false {
+                                ForEach(food.foodVariants, id: \.self){ variant in
+                                    if variant.variantChecked {
+                                        VStack(alignment: .leading, spacing: 0) {
+                                            HStack(spacing: 0){
+                                                Divider()
+                                                VStack(alignment: .leading, spacing: 0){
+                                                    Divider()
+                                                }.frame(width: 20)
+                                                ScrollView(.horizontal, showsIndicators: false) {
+                                                    HStack{
                                                         HStack{
                                                             Image(systemName: "doc.plaintext")
                                                             Text(variant.variantName)
+                                                                .padding(.trailing)
+                                                            Text("\(variant.variantPrice, format: .currency(code: "EUR")) x\(food.foodQuantity / Double(food.foodVariants.filter{ $0.variantChecked == true }.count), format: .number)")
                                                         }.font(.subheadline).foregroundColor(.secondary)
-                                                    }else {
-                                                        
                                                     }
                                                 }
+                                                .padding(.leading, 5)
                                             }
-                                        }
-                                        .padding(.leading, 5)
+                                        }.padding(.leading, 5)
                                     }
-                                }.padding(.leading, 5)
+                                }
                             }
                         }
                     }else {
@@ -124,7 +125,7 @@ struct CookingView: View {
                                 ScrollView(.horizontal, showsIndicators: false) {
                                     HStack {
                                         ForEach(food.foodVariants, id: \.self){ variant in
-                                            if (variant.variantChecked ?? false){
+                                            if (variant.variantChecked ){
                                                 HStack(spacing: 1){
                                                     Image(systemName: "doc.plaintext")
                                                     Text("\(variant.variantName.capitalized)")

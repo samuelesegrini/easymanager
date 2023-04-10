@@ -38,11 +38,11 @@ extension Food {
 }
 
 struct Variants: Codable, Hashable  {
-    var variantChecked: Bool?
+    var variantChecked: Bool
     var variantName: String
     var variantPrice: Double
     var variantDescription: String
 }
 extension Variants {
-    static let empty = Variants(variantName: "", variantPrice: 0, variantDescription: "")
+    static let empty = Variants(variantChecked: false, variantName: "", variantPrice: 0, variantDescription: "")
 }

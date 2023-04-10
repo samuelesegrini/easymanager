@@ -171,17 +171,20 @@ class PrinterViewModel : NSObject, ObservableObject {
             
             for food in ricevuta.orderFood {
                 var foodTotal = 0.0
-                for variants in food.foodVariants {
-                    if variants.variantChecked  ?? false{
-                        total += variants.variantPrice
-                        foodTotal += variants.variantPrice
-                    }
-                }
-                total += food.foodPrice
-                foodTotal += food.foodPrice
                 
-                total *= food.foodQuantity
-                foodTotal *= food.foodQuantity
+                let numberVariant = food.foodVariants.filter{ $0.variantChecked == true}.count
+
+                if numberVariant != 0 {
+                    for variants in food.foodVariants {
+                        if variants.variantChecked  {
+                            total += (variants.variantPrice * (food.foodQuantity / Double(numberVariant)))
+                            foodTotal += variants.variantPrice
+                        }
+                    }
+                }else{
+                    total += (food.foodPrice * food.foodQuantity)
+                    foodTotal += (food.foodPrice * food.foodQuantity)
+                }
                 
                 let maxLenght = 46
 
@@ -254,10 +257,23 @@ class PrinterViewModel : NSObject, ObservableObject {
                     department = 3
                 }
                 
-                xmlString.append("""
+                if Double(food.foodVariants.count) != 0{
+                    let quant = (food.foodQuantity / Double(food.foodVariants.filter{ $0.variantChecked == true }.count))
+                    for variant in food.foodVariants{
+                        
+                        if variant.variantChecked {
+                            xmlString.append("""
+                                        <printRecItem operator=\"\(user.userNOperator)\" description=\"\(food.foodName) \(variant.variantName)\" quantity=\"\(quant)\" unitPrice=\"\(variant.variantPrice)\" department=\"\(department)\"/>
+                                     """
+                            )
+                        }
+                    }
+                }else {
+                    xmlString.append("""
                                     <printRecItem operator=\"\(user.userNOperator)\" description=\"\(food.foodName)\" quantity=\"\(food.foodQuantity)\" unitPrice=\"\(food.foodPrice)\" department=\"\(department)\"/>
                                  """
-                )
+                    )
+                }
             }
             for pay in pagamento{
                 if pay.pagamentoTipo == 0 {
@@ -289,6 +305,7 @@ class PrinterViewModel : NSObject, ObservableObject {
                 </s:Envelope>
                 """
             )
+            print(xmlString)
         }
         
         request.httpBody = xmlString.data(using: .utf8)

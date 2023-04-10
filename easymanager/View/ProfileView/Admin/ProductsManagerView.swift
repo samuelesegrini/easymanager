@@ -16,6 +16,9 @@ struct ProductsManagerView: View {
     @State private var editSaveSheet : ProductsStruct?
     @State private var prod = ProductsStruct.empty
     
+    @State private var variante = Variants.empty
+    @State private var editVariants = false
+
     @State private var addVariants = false
     @State private var newVariantName = ""
     @State private var ruolo = ""
@@ -155,19 +158,37 @@ struct ProductsManagerView: View {
                         }
                     }
                 }
+                let v = Variants.empty
                 Section{
-                    ForEach(prod.productVariants, id:\.self){ variant in
+                    ForEach(Array(prod.productVariants.enumerated()), id:\.offset){ offset, variant in
                         HStack{
                             Text(variant.variantName)
                                 .lineLimit(3)
                             Spacer()
                             Text("\(variant.variantPrice, format: .currency(code: "EUR"))")
                             Spacer()
-                            Text(variant.variantDescription)
-                                .lineLimit(3, reservesSpace: true)
+                            Button {
+                                variante = variant
+                                editVariants = true
+                            } label: {
+                                Image(systemName: "square.and.pencil")
+                            }
+                            .buttonStyle(.borderless)
+                            Button {
+                                prod.productVariants.remove(at: offset)
+                            } label: {
+                                Image(systemName: "trash")
+                                    .foregroundColor(.red)
+                            }
+                            .buttonStyle(.borderless)
                         }
                     }
                 }
+            }
+            .sheet(isPresented: $editVariants) {
+                let v = variante
+                editVariant(variant: v)
+                    .padding(30)
             }
             .sheet(isPresented: $addVariants){
                 NavigationStack{
@@ -196,7 +217,7 @@ struct ProductsManagerView: View {
                     .padding(.vertical)
                     Spacer()
                     Button {
-                        prod.productVariants.append(Variants(variantName: newVariantName, variantPrice: newVariantPrice, variantDescription: newVariantDescription))
+                        prod.productVariants.append(Variants(variantChecked: false, variantName: newVariantName, variantPrice: newVariantPrice, variantDescription: newVariantDescription))
                         addVariants = false
                     } label: {
                         ZStack {
@@ -254,6 +275,56 @@ struct ProductsManagerView: View {
                 prod = ProductsStruct.empty
             }
         }
+    }
+    @ViewBuilder
+    func editVariant(variant : Variants) -> some View{
+        VStack{
+            HStack{
+                Text("Nome").bold()
+                TextField("Obbligatorio", text: $variante.variantName)
+                    .padding(.horizontal)
+                    .keyboardType(.default)
+            }
+            .padding(.vertical)
+            HStack {
+                Text("Prezzo").bold()
+                TextField("Obbligatorio", value: $variante.variantPrice, format: .currency(code: "EUR"))
+                    .keyboardType(.decimalPad)
+                    .padding(.horizontal, 50)
+            }
+            .padding(.vertical)
+            HStack {
+                Text("Note").bold()
+                TextField("Facoltative", text: $variante.variantDescription, axis: .vertical)
+                    .lineLimit(3, reservesSpace: true)
+                    .padding(.horizontal, 50)
+                    .keyboardType(.default)
+
+            }
+            .padding(.vertical)
+            Spacer()
+            Button {
+                print("var \(variant)")
+                prod.productVariants.removeAll { v in
+                    v == variant
+                }
+                prod.productVariants.append(variante)
+                editVariants = false
+            } label: {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 15)
+                        .frame(height: 60)
+                    HStack{
+                        Image(systemName: "checkmark.seal.fill")
+                        Text("Salva Variante").bold()
+                    }
+                    .foregroundColor(.white)
+                }
+            }
+            .padding()
+            .padding(.horizontal)
+        }
+        .navigationTitle("Modifica Variante")
     }
 }
 

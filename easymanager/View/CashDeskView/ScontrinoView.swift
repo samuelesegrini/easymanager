@@ -96,26 +96,26 @@ struct ScontrinoView: View {
                     }
                 }
                 VStack(alignment: .leading){
-                    let totalFoodPrice = ordine.totalAmount(ordine: ordine.ordineTavolo)
                     VStack {
                         orderModify()
                         Spacer()
                         Button {
-                            ordine.ordineTavolo.orderTotalPrice = totalFoodPrice
-                            ordine.orderToModifyOrDelete = OrderStruct(userRestaurantID: "", orderFood: ordine.ordineTavolo.orderFood, orderTime: ordine.ordineTavolo.orderTime, orderTotalPrice: ordine.ordineTavolo.orderTotalPrice, orderTable: ordine.ordineTavolo.orderTable, orderSenderID: auth.utente.id ?? "")
-                            orderSheet = ordine.ordineTavolo
+                            ordine.ordineTavolo.orderTotalPrice = ordine.totalAmount(ordine: ordine.ordineTavolo)
                             ordine.updateData(itemToUpdate: ordine.ordineTavolo)
+                            
+                            ordine.ordineTavolo = ordine.filterOrderbyTable(tavolo: ordine.ordineTavolo.orderTable)
+                            orderSheet = ordine.ordineTavolo
 
                         } label: {
                             ZStack {
                                 Rectangle()
                                     .cornerRadius(15)
-                                Text("CheckOut : \(totalFoodPrice, format: .currency(code: "EUR"))")
+                                Text("CheckOut : \(ordine.totalAmount(ordine: ordine.ordineTavolo), format: .currency(code: "EUR"))")
                                     .foregroundColor(.white)
                                     .font(.headline)
                             }
                         }
-                        .disabled(totalFoodPrice.isZero)
+                        .disabled(ordine.totalAmount(ordine: ordine.ordineTavolo).isZero)
                         .frame(height: 60)
                         .padding(.horizontal, 32)
                         .padding(.top)
@@ -136,9 +136,6 @@ struct ScontrinoView: View {
                 }
             }
         }
-        .onAppear{
-            ordine.ordineVuoto = OrderStruct.empty
-        }
         .background(Color(UIColor.systemBackground))
         .cornerRadius(15)
         .padding(.trailing, sizeClass == .compact ? 0 : 20)
@@ -152,11 +149,10 @@ struct ScontrinoView: View {
             
             Spacer()
             VStack {
-                Button {
-                    ordine.ordineVuoto.orderTotalPrice = totalFoodPrice
-                    
+                Button {                    
                     ordine.ordineVuoto.orderTable = "\(ordine.selectedOption)" + " \((ordine.biggestNumber ?? 0) + 1)"
                     ordine.ordineVuoto.orderTime = Date()
+                    ordine.ordineVuoto.orderTotalPrice = ordine.totalAmount(ordine: ordine.ordineVuoto)
                     ordine.ordineVuoto.orderSenderID = auth.utente.id ?? ""
                     ordine.orderToModifyOrDelete = ordine.ordineVuoto
                     ordine.addData()
@@ -169,7 +165,7 @@ struct ScontrinoView: View {
                     ZStack {
                         Rectangle()
                             .cornerRadius(15)
-                        Text("Completa Ordine \(totalFoodPrice, format: .currency(code: "EUR"))")
+                        Text("Completa Ordine \(ordine.totalAmount(ordine: ordine.ordineVuoto), format: .currency(code: "EUR"))")
                             .foregroundColor(.white)
                             .font(.headline)
                     }

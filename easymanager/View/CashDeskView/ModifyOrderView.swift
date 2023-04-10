@@ -98,12 +98,13 @@ struct sheetOrdine : View {
                     Stepper("Scegli la quantità : \(quant, specifier: "%.0f")", value: $quant).font(.subheadline)
                     if sizeClass == .compact {
                         List {
-                            ForEach($ordine.prodottoModify.foodVariants, id: \.self){ $variant in
+                            ForEach($prodotto.copiaProdotto.productVariants, id: \.self){ $variant in
                                 Button {
-                                    variant.variantChecked?.toggle()
+                                    variant.variantChecked.toggle()
+
                                 } label: {
                                     HStack {
-                                        Image(systemName: variant.variantChecked == true ? "checkmark.circle.fill" :"circle")
+                                        Image(systemName: variant.variantChecked == true ? "checkmark.circle.fill" : "circle")
                                         Text(variant.variantName)
                                             .font(.callout)
                                         Text("\(variant.variantPrice,format: .currency(code: "EUR"))")
@@ -118,11 +119,10 @@ struct sheetOrdine : View {
                 }
                 if sizeClass != .compact{
                     VStack (alignment: .leading){
-                        
                         List {
                             ForEach($prodotto.copiaProdotto.productVariants, id: \.self){ $variant in
                                 Button {
-                                    variant.variantChecked?.toggle()
+                                    variant.variantChecked.toggle()
                                 } label: {
                                     HStack {
                                         Image(systemName: variant.variantChecked == true ? "checkmark.circle.fill" :"circle")
@@ -144,7 +144,13 @@ struct sheetOrdine : View {
             }
             .padding()
         }
-        
+        if Double(prodotto.copiaProdotto.productVariants.filter{ $0.variantChecked == true}.count) != quant && prodotto.copiaProdotto.productVariants.filter({ $0.variantChecked == true}).count > 1 {
+            
+            Text("Attenzione la quantità dei prodotti ed il numero di varianti selezionate non combaciano (Quant. \(quant, format: .number), N.Varianti \(prodotto.copiaProdotto.productVariants.filter{ $0.variantChecked == true}.count, format: .number)). \nInserire le varianti singolarmente")
+                .foregroundColor(.red)
+                .padding()
+        }
+
         Button {
             //Controllo se esiste già un prodotto con queste caratteristiche, se si ne aumento la quantità
             let doubleProduct = ordine.checkDoubleProducts(prodotto: prodotto.copiaProdotto)
@@ -174,6 +180,7 @@ struct sheetOrdine : View {
             }
             .cornerRadius(15)
         }
+        .disabled(Double(prodotto.copiaProdotto.productVariants.filter{ $0.variantChecked == true}.count) != quant && prodotto.copiaProdotto.productVariants.filter({ $0.variantChecked == true}).count > 1)
         .padding()
         .navigationTitle(prodotto.copiaProdotto.productName)
         .navigationBarTitleDisplayMode(.inline)

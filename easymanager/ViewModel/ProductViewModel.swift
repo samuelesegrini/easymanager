@@ -10,6 +10,8 @@ import Firebase
 import FirebaseFirestoreSwift
 
 class ProductViewModel: ObservableObject, Identifiable {
+    @Published var copiaProdotto = ProductsStruct.empty
+
     @Published var categoryList = [CategoryStruct]()
     @Published var productList = [ProductsStruct]()
     
@@ -26,8 +28,6 @@ class ProductViewModel: ObservableObject, Identifiable {
     //TODO: create single variable per single input and update adddata
     @Published var productToModifyOrDelete = ProductsStruct.empty
     @Published var categoryToModifyOrDelete = CategoryStruct.empty
-    
-    @Published var copiaProdotto = ProductsStruct.empty
 }
 
 extension ProductViewModel {
@@ -169,7 +169,7 @@ extension ProductViewModel {
         var total : Double = 0
         
         for variant in prodotto.productVariants {
-            if variant.variantChecked ?? false {
+            if variant.variantChecked {
                 total += (variant.variantPrice)
             }
         }

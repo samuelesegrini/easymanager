@@ -34,39 +34,34 @@ struct orderModify : View {
                                 }.frame(width: 5)
                                 HStack{
                                     Text(food.foodName).strikethrough(food.foodReversed).font(.headline).bold().lineLimit(2, reservesSpace: false)
-                                    ZStack{
-                                        Circle().frame(width: 15, height: 15)
-                                        Text("\(food.foodPortata)")
-                                    }
                                     Spacer()
                                 }
-                                Text("\(food.foodPrice * food.foodQuantity,format: .currency(code: "EUR"))") .strikethrough(food.foodReversed).font(.headline).foregroundColor(.accentColor).bold()
+                                Text("\(ordine.totalFood(food: food),format: .currency(code: "EUR"))") .strikethrough(food.foodReversed).font(.headline).foregroundColor(.accentColor).bold()
                             }
                             if  count != 0 {
-                                VStack(alignment: .leading, spacing: 0) {
-                                    HStack(spacing: 0){
-                                        Divider()
-                                        VStack(alignment: .leading, spacing: 0){
-                                            Divider()
-                                        }.frame(width: 20)
-                                        ScrollView(.horizontal, showsIndicators: false) {
-                                            HStack{
-                                                ForEach(food.foodVariants, id: \.self){ variant in
-                                                    if variant.variantChecked ?? false {
+                                ForEach(food.foodVariants, id: \.self){ variant in
+                                    if variant.variantChecked {
+                                        VStack(alignment: .leading, spacing: 0) {
+                                            HStack(spacing: 0){
+                                                Divider()
+                                                VStack(alignment: .leading, spacing: 0){
+                                                    Divider()
+                                                }.frame(width: 20)
+                                                ScrollView(.horizontal, showsIndicators: false) {
+                                                    HStack{
                                                         HStack{
                                                             Image(systemName: "doc.plaintext")
                                                             Text(variant.variantName)
                                                                 .padding(.trailing)
-                                                            Text("\(variant.variantPrice, format: .currency(code: "EUR")) x\(food.foodQuantity, format: .number)")
+                                                            Text("\(variant.variantPrice, format: .currency(code: "EUR")) x\(food.foodQuantity / Double(food.foodVariants.filter{ $0.variantChecked == true }.count), format: .number)")
                                                         }.font(.subheadline).foregroundColor(.secondary)
-                                                    }else {
                                                     }
                                                 }
+                                                .padding(.leading, 5)
                                             }
-                                        }
-                                        .padding(.leading, 5)
+                                        }.padding(.leading, 5)
                                     }
-                                }.padding(.leading, 5)
+                                }
                             }
                         }
                     }else {
@@ -86,7 +81,7 @@ struct orderModify : View {
                                 ScrollView(.horizontal, showsIndicators: false) {
                                     HStack {
                                         ForEach(food.foodVariants, id: \.self){ variant in
-                                            if (variant.variantChecked ?? false){
+                                            if (variant.variantChecked){
                                                 HStack(spacing: 1){
                                                     Image(systemName: "doc.plaintext")
                                                     Text("\(variant.variantName.capitalized)")
@@ -103,7 +98,7 @@ struct orderModify : View {
                             Spacer()
                             
                             //Dare in output prezzo del cibo (compreso di prezzo varianti)
-                            Text("\(food.foodPrice * food.foodQuantity,format: .currency(code: "EUR"))") .strikethrough(food.foodReversed).font(.subheadline).foregroundColor(.accentColor).bold()
+                            Text("\(ordine.totalFood(food: food),format: .currency(code: "EUR"))") .strikethrough(food.foodReversed).font(.subheadline).foregroundColor(.accentColor).bold()
                         }
                     }
                 }
@@ -180,7 +175,7 @@ struct sheetModify : View {
                         List {
                             ForEach($ordine.prodottoModify.foodVariants, id: \.self){ $variant in
                                 Button {
-                                    variant.variantChecked?.toggle()
+                                    variant.variantChecked.toggle()
                                 } label: {
                                     HStack {
                                         Image(systemName: variant.variantChecked == true ? "checkmark.circle.fill" :"circle")
@@ -201,7 +196,7 @@ struct sheetModify : View {
                         List {
                             ForEach($ordine.prodottoModify.foodVariants, id: \.self){ $variant in
                                 Button {
-                                    variant.variantChecked?.toggle()
+                                    variant.variantChecked.toggle()
                                 } label: {
                                     HStack {
                                         Image(systemName: variant.variantChecked == true ? "checkmark.circle.fill" :"circle")
@@ -220,6 +215,13 @@ struct sheetModify : View {
                 }
             }
             .padding()
+            
+            if Double(ordine.prodottoModify.foodVariants.filter{ $0.variantChecked == true}.count) != ordine.prodottoModify.foodQuantity && ordine.prodottoModify.foodVariants.filter({ $0.variantChecked == true}).count > 1 {
+                
+                Text("Attenzione la quantità dei prodotti ed il numero di varianti selezionate non combaciano (Quant. \(ordine.prodottoModify.foodQuantity, format: .number), N.Varianti \(ordine.prodottoModify.foodVariants.filter{ $0.variantChecked == true}.count, format: .number)). \nInserire le varianti singolarmente")
+                    .foregroundColor(.red)
+                    .padding()
+            }
             Button {
                 if ordine.selectedOption == "Tavolo" {
                     ordine.ordineTavolo.orderFood = ordine.modifyFood(exValore: modificabile)
@@ -239,8 +241,10 @@ struct sheetModify : View {
                 }
                 .cornerRadius(15)
             }
+            .disabled(Double(ordine.prodottoModify.foodVariants.filter{ $0.variantChecked == true}.count) != ordine.prodottoModify.foodQuantity && ordine.prodottoModify.foodVariants.filter({ $0.variantChecked == true}).count > 1)
+
             .padding()
-            }
+        }
         .navigationTitle(ordine.prodottoModify.foodName)
         .navigationBarTitleDisplayMode(.inline)
         

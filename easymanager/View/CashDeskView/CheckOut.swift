@@ -68,9 +68,6 @@ struct CheckOut: View {
                 }
                 .pickerStyle(.segmented)
                 .padding(.horizontal)
-                .onAppear{
-                    subtotale = order.orderTotalPrice
-                }
                 
                 displayFoodBuilder(order: order)
                 
@@ -89,6 +86,7 @@ struct CheckOut: View {
                                 .onChange(of: numeroConti) { newValue in
                                     if multiSelection.isEmpty {
                                         subtotale = order.orderTotalPrice / newValue
+                                        print("Subtotale diviso \(newValue)")
                                     }else {
                                         subtotale = ordine.totalAmount(ordine: OrderStruct(userRestaurantID: "", orderFood: Array(multiSelection), orderTime: order.orderTime, orderTotalPrice: order.orderTotalPrice, orderTable: order.orderTable, orderSenderID: order.orderSenderID)) / newValue
                                     }
@@ -118,7 +116,6 @@ struct CheckOut: View {
                             Text("Totale")
                             Spacer()
                             Text("\(order.orderTotalPrice, format: .currency(code: "EUR"))")
-                            
                         }
                         .padding(.horizontal, 30)
                         .padding(.vertical)
@@ -162,6 +159,10 @@ struct CheckOut: View {
                 }
                 
             }
+            .onAppear{
+                subtotale = order.orderTotalPrice
+                print("Subtotale iniziale")
+            }
             .navigationTitle("Scontrino")
             .navigationBarTitleDisplayMode(.inline)
         }
@@ -176,7 +177,7 @@ struct CheckOut: View {
                     ScrollView(.horizontal,showsIndicators: false) {
                         HStack(spacing: 1){
                             ForEach(food.foodVariants, id:\.self){ variant in
-                                if (variant.variantChecked ?? false){
+                                if (variant.variantChecked){
                                     Text("\(variant.variantName.capitalized)").strikethrough(food.foodReversed)
                                         .font(.caption2)
                                         .padding(.horizontal)
@@ -193,7 +194,7 @@ struct CheckOut: View {
                     }
                 }
                 Spacer()
-                Text("\(ordine.totalFood(food: food),format: .currency(code: "EUR"))").strikethrough(food.foodReversed).font(.headline).foregroundColor(.accentColor)
+                Text("\(ordine.totalFood(food: food), format: .currency(code: "EUR"))").strikethrough(food.foodReversed).font(.headline).foregroundColor(.accentColor)
             }
             .frame(height: 55)
         }
@@ -491,15 +492,16 @@ struct CheckOut: View {
                             }
                         }else{
                             if numeroConti > 1 {
-                                numeroConti -= 1
-
                                 if ordine.selectedOption == "Tavolo"{
                                     order.orderTotalPrice -= subtotale
                                     ordine.ordineTavolo.orderTotalPrice -= subtotale
+
                                 }else{
                                     order.orderTotalPrice -= subtotale
                                     ordine.ordineVuoto.orderTotalPrice -= subtotale
+
                                 }
+                                numeroConti -= 1
                             }else{
                                 var t = table.tableList.first{ t in
                                     t.tableName == order.orderTable && t.waiterID == order.orderSenderID

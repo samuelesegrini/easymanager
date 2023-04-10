@@ -90,6 +90,8 @@ extension OrderViewModel {
     }
     func deleteData(order: OrderStruct){
         orderToModifyOrDelete = order
+        
+        //A volte non prende order table e ordersenderID
         orderToModifyOrDelete.id = orderList.first(where: { o in
             o.orderFood == orderToModifyOrDelete.orderFood && o.orderSenderID == orderToModifyOrDelete.orderSenderID && o.orderTable == orderToModifyOrDelete.orderTable
         })?.id
@@ -100,7 +102,6 @@ extension OrderViewModel {
                 if error == nil {
                     self.orderToModifyOrDelete = OrderStruct.empty
                     self.fetchAndMap()
-                    print("Successo nell'eliminare l'ordine")
                 }
             }
         }
@@ -183,12 +184,17 @@ extension OrderViewModel {
         
         for food in ordine.orderFood {
             if !food.foodReversed {
-                for variant in food.foodVariants {
-                    if variant.variantChecked ?? false {
-                        total += (variant.variantPrice * food.foodQuantity)
+                let numberVariant = food.foodVariants.filter{ $0.variantChecked == true}.count
+                
+                if numberVariant != 0 {
+                    for variant in food.foodVariants {
+                        if variant.variantChecked {
+                            total += variant.variantPrice * (food.foodQuantity / Double(numberVariant))
+                        }
                     }
+                }else{
+                    total += (food.foodPrice * food.foodQuantity)
                 }
-                total += (food.foodPrice * food.foodQuantity)
             }
         }
         return total
@@ -196,13 +202,18 @@ extension OrderViewModel {
     func totalFood(food : Food) -> Double{
         var total : Double = 0
         
-        for variant in food.foodVariants {
-            if variant.variantChecked ?? false {
-                total += (variant.variantPrice * food.foodQuantity)
+        let numberVariant = food.foodVariants.filter{ $0.variantChecked == true}.count
+        
+        if numberVariant != 0 {
+            for variant in food.foodVariants {
+                if variant.variantChecked {
+                    total += variant.variantPrice * (food.foodQuantity / Double(numberVariant))
+                }
             }
+        }else{
+            total += (food.foodPrice * food.foodQuantity)
         }
-        total += (food.foodPrice * food.foodQuantity)
-
+        
         return total
     }
     
