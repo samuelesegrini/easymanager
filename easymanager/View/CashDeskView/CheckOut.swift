@@ -464,12 +464,14 @@ struct CheckOut: View {
                             ordine.saveOrder()
 
                             ordine.deleteData(order: ordine.ordineTavolo)
+                            ordine.ordineTavolo = OrderStruct.empty
                             dismiss()
                         }else{
                             ordine.orderToModifyOrDelete = ordine.ordineVuoto
                             ordine.saveOrder()
 
                             ordine.deleteData(order: ordine.ordineVuoto)
+                            ordine.ordineVuoto = OrderStruct.empty
                             dismiss()
                         }
                     }else {
@@ -517,9 +519,11 @@ struct CheckOut: View {
                                 
                                 if ordine.selectedOption == "Tavolo"{
                                     ordine.deleteData(order: ordine.ordineTavolo)
+                                    ordine.ordineTavolo = OrderStruct.empty
                                     dismiss()
                                 }else{
                                     ordine.deleteData(order: ordine.ordineVuoto)
+                                    ordine.ordineVuoto = OrderStruct.empty
                                     dismiss()
                                 }
                             }

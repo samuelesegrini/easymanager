@@ -257,7 +257,7 @@ class PrinterViewModel : NSObject, ObservableObject {
                     department = 3
                 }
                 
-                if Double(food.foodVariants.count) != 0{
+                if Double(food.foodVariants.filter{$0.variantChecked == true}.count) != 0{
                     let quant = (food.foodQuantity / Double(food.foodVariants.filter{ $0.variantChecked == true }.count))
                     for variant in food.foodVariants{
                         

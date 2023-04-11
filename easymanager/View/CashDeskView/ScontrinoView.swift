@@ -170,6 +170,9 @@ struct ScontrinoView: View {
                             .font(.headline)
                     }
                 }
+                .onAppear{
+                    ordine.ordineVuoto = OrderStruct.empty
+                }
                 .disabled(totalFoodPrice.isZero)
                 .frame(height: 60)
                 .padding(.horizontal)
