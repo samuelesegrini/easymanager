@@ -25,6 +25,7 @@ struct ScontrinoView: View {
             Picker("tipologia", selection: $ordine.selectedOption) {
                 ForEach(ordine.options, id:\.self){option in
                     Text(option).tag(option)
+                        .font(.headline)
                 }
             }
             .pickerStyle(.segmented)

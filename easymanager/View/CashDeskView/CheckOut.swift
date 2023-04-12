@@ -64,6 +64,7 @@ struct CheckOut: View {
                 Picker(selection: $printerManager.receiptType, label: Text("Metodo Ricevuta")) {
                     ForEach(ReceiptType.allCases, id: \.self){ type in
                         Text(type.rawValue).tag(type)
+                            .font(.headline)
                     }
                 }
                 .pickerStyle(.segmented)

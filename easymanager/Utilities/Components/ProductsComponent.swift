@@ -23,7 +23,7 @@ struct ProductsComponent: View {
     ]
     
     private let adaptiveColumnsCateg = [
-        GridItem(.adaptive(minimum: 70))
+        GridItem(.adaptive(minimum: 90))
     ]
     
     var body: some View {
@@ -39,11 +39,12 @@ struct ProductsComponent: View {
                                     .foregroundColor(.accentColor)
                                     .opacity(0.17)
                                 Text(categoria.categoryName)
-                                    .font(.caption)
+                                    .font(.headline)
+                                    .bold()
                             }
                         }
                         .buttonStyle(.borderless)
-                        .frame(width: 70, height: 40)
+                        .frame(width: 100, height: 50)
                     }
                 }
                 .padding(.leading)
