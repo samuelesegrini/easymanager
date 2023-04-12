@@ -20,7 +20,7 @@ class OrderViewModel: ObservableObject, Identifiable {
         fetchAndMap()
     }
     
-    //TODO: create single variable per single input and update adddata
+    //TODO: create single variable per single input and update addData
     @Published var orderToModifyOrDelete = OrderStruct.empty
     
     @Published var ordineVuoto = OrderStruct.empty

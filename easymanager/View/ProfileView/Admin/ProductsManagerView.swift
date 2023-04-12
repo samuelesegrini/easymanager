@@ -158,7 +158,6 @@ struct ProductsManagerView: View {
                         }
                     }
                 }
-                let v = Variants.empty
                 Section{
                     ForEach(Array(prod.productVariants.enumerated()), id:\.offset){ offset, variant in
                         HStack{

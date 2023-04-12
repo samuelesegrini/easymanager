@@ -157,7 +157,6 @@ struct CheckOut: View {
                     .frame(height: 70)
                     .padding()
                 }
-                
             }
             .onAppear{
                 subtotale = order.orderTotalPrice
@@ -259,6 +258,418 @@ struct CheckOut: View {
                 .padding()
             }
             HStack{
+                Button {
+                    payement.append(pagamento(pagamentoTipo: 0, pagamentoImporto: subtotale))
+
+                    if order.orderTotalPrice == subtotale {
+                        printerManager.sendXMLRequest(receipt: order, subtotale: subtotale, pagamento: payement, user: auth.utente)
+                        
+                        var t = table.tableList.first{ t in
+                            t.tableName == order.orderTable && t.waiterID == order.orderSenderID
+                        } ?? TableStruct.empty
+                        
+                        t.tableStatus = "Libero"
+                        t.tableSeatsOccupied = 0
+                        t.waiterID = ""
+                        
+                        if t.id != ""{
+                            table.updateData(table: t)
+                        }
+                        
+                        if ordine.selectedOption == "Tavolo"{
+                            ordine.orderToModifyOrDelete = ordine.ordineTavolo
+                            ordine.saveOrder()
+
+                            ordine.deleteData(order: ordine.ordineTavolo)
+                            ordine.ordineTavolo = OrderStruct.empty
+                            dismiss()
+                        }else{
+                            ordine.orderToModifyOrDelete = ordine.ordineVuoto
+                            ordine.saveOrder()
+
+                            ordine.deleteData(order: ordine.ordineVuoto)
+                            ordine.ordineVuoto = OrderStruct.empty
+                            dismiss()
+                        }
+                    }else {
+                        //If user selected only some of the products
+                        if !multiSelection.isEmpty{
+                            order.orderFood = order.orderFood.filter{ Array(multiSelection).contains($0) }
+                            
+                            printerManager.sendXMLRequest(receipt: order, subtotale: subtotale, pagamento: payement, user: auth.utente)
+                            
+                            if ordine.selectedOption == "Tavolo"{
+                                order.orderFood = order.orderFood.filter{ !Array(multiSelection).contains($0) }
+                                order.orderTotalPrice = ordine.totalAmount(ordine: order)
+                                
+                                ordine.ordineTavolo = order
+                            }else{
+                                order.orderFood = order.orderFood.filter{ !Array(multiSelection).contains($0) }
+                                order.orderTotalPrice = ordine.totalAmount(ordine: order)
+                                
+                                ordine.ordineVuoto = order
+                            }
+                        }else{
+                            if numeroConti > 1 {
+                                printerManager.sendXMLRequest(receipt: order, subtotale: subtotale, pagamento: payement, user: auth.utente)
+
+                                if ordine.selectedOption == "Tavolo"{
+                                    order.orderTotalPrice -= subtotale
+                                    ordine.ordineTavolo.orderTotalPrice -= subtotale
+
+                                }else{
+                                    order.orderTotalPrice -= subtotale
+                                    ordine.ordineVuoto.orderTotalPrice -= subtotale
+
+                                }
+                                numeroConti -= 1
+                            }else{
+                                var t = table.tableList.first{ t in
+                                    t.tableName == order.orderTable && t.waiterID == order.orderSenderID
+                                } ?? TableStruct.empty
+                                
+                                t.tableStatus = "Libero"
+                                t.tableSeatsOccupied = 0
+                                t.waiterID = ""
+                                
+                                if t.id != ""{
+                                    table.updateData(table: t)
+                                }
+                                
+                                if ordine.selectedOption == "Tavolo"{
+                                    ordine.deleteData(order: ordine.ordineTavolo)
+                                    ordine.ordineTavolo = OrderStruct.empty
+                                    dismiss()
+                                }else{
+                                    ordine.deleteData(order: ordine.ordineVuoto)
+                                    ordine.ordineVuoto = OrderStruct.empty
+                                    dismiss()
+                                }
+                            }
+                        }
+                    }
+                    payement = []
+                    pagatoDef = 0
+                    pagamentoTipo = "Contante"
+                } label: {
+                    ZStack{
+                        RoundedRectangle(cornerRadius: 15)
+                            .foregroundColor(.green)
+                        Text("Contante")
+                            .foregroundColor(.white)
+                            .bold()
+                    }
+                }
+                Button {
+                    payement.append(pagamento(pagamentoTipo: 2, pagamentoImporto: subtotale))
+
+                    if order.orderTotalPrice == subtotale {
+                        printerManager.sendXMLRequest(receipt: order, subtotale: subtotale, pagamento: payement, user: auth.utente)
+                        
+                        var t = table.tableList.first{ t in
+                            t.tableName == order.orderTable && t.waiterID == order.orderSenderID
+                        } ?? TableStruct.empty
+                        
+                        t.tableStatus = "Libero"
+                        t.tableSeatsOccupied = 0
+                        t.waiterID = ""
+                        
+                        if t.id != ""{
+                            table.updateData(table: t)
+                        }
+                        
+                        if ordine.selectedOption == "Tavolo"{
+                            ordine.orderToModifyOrDelete = ordine.ordineTavolo
+                            ordine.saveOrder()
+
+                            ordine.deleteData(order: ordine.ordineTavolo)
+                            ordine.ordineTavolo = OrderStruct.empty
+                            dismiss()
+                        }else{
+                            ordine.orderToModifyOrDelete = ordine.ordineVuoto
+                            ordine.saveOrder()
+
+                            ordine.deleteData(order: ordine.ordineVuoto)
+                            ordine.ordineVuoto = OrderStruct.empty
+                            dismiss()
+                        }
+                    }else {
+                        //If user selected only some of the products
+                        if !multiSelection.isEmpty{
+                            order.orderFood = order.orderFood.filter{ Array(multiSelection).contains($0) }
+                            
+                            printerManager.sendXMLRequest(receipt: order, subtotale: subtotale, pagamento: payement, user: auth.utente)
+                            
+                            if ordine.selectedOption == "Tavolo"{
+                                order.orderFood = order.orderFood.filter{ !Array(multiSelection).contains($0) }
+                                order.orderTotalPrice = ordine.totalAmount(ordine: order)
+                                
+                                ordine.ordineTavolo = order
+                            }else{
+                                order.orderFood = order.orderFood.filter{ !Array(multiSelection).contains($0) }
+                                order.orderTotalPrice = ordine.totalAmount(ordine: order)
+                                
+                                ordine.ordineVuoto = order
+                            }
+                        }else{
+                            if numeroConti > 1 {
+                                printerManager.sendXMLRequest(receipt: order, subtotale: subtotale, pagamento: payement, user: auth.utente)
+
+                                if ordine.selectedOption == "Tavolo"{
+                                    order.orderTotalPrice -= subtotale
+                                    ordine.ordineTavolo.orderTotalPrice -= subtotale
+
+                                }else{
+                                    order.orderTotalPrice -= subtotale
+                                    ordine.ordineVuoto.orderTotalPrice -= subtotale
+
+                                }
+                                numeroConti -= 1
+                            }else{
+                                var t = table.tableList.first{ t in
+                                    t.tableName == order.orderTable && t.waiterID == order.orderSenderID
+                                } ?? TableStruct.empty
+                                
+                                t.tableStatus = "Libero"
+                                t.tableSeatsOccupied = 0
+                                t.waiterID = ""
+                                
+                                if t.id != ""{
+                                    table.updateData(table: t)
+                                }
+                                
+                                if ordine.selectedOption == "Tavolo"{
+                                    ordine.deleteData(order: ordine.ordineTavolo)
+                                    ordine.ordineTavolo = OrderStruct.empty
+                                    dismiss()
+                                }else{
+                                    ordine.deleteData(order: ordine.ordineVuoto)
+                                    ordine.ordineVuoto = OrderStruct.empty
+                                    dismiss()
+                                }
+                            }
+                        }
+                    }
+                    payement = []
+                    pagatoDef = 0
+                    pagamentoTipo = "Contante"
+                } label: {
+                    ZStack{
+                        RoundedRectangle(cornerRadius: 15)
+                            .foregroundColor(.orange)
+                        Text("Carta")
+                            .foregroundColor(.white)
+                            .bold()
+                    }
+                }
+                Button {
+                    payement.append(pagamento(pagamentoTipo: 2, pagamentoImporto: subtotale))
+
+                    if order.orderTotalPrice == subtotale {
+                        printerManager.sendXMLRequest(receipt: order, subtotale: subtotale, pagamento: payement, user: auth.utente)
+                        
+                        var t = table.tableList.first{ t in
+                            t.tableName == order.orderTable && t.waiterID == order.orderSenderID
+                        } ?? TableStruct.empty
+                        
+                        t.tableStatus = "Libero"
+                        t.tableSeatsOccupied = 0
+                        t.waiterID = ""
+                        
+                        if t.id != ""{
+                            table.updateData(table: t)
+                        }
+                        
+                        if ordine.selectedOption == "Tavolo"{
+                            ordine.orderToModifyOrDelete = ordine.ordineTavolo
+                            ordine.saveOrder()
+
+                            ordine.deleteData(order: ordine.ordineTavolo)
+                            ordine.ordineTavolo = OrderStruct.empty
+                            dismiss()
+                        }else{
+                            ordine.orderToModifyOrDelete = ordine.ordineVuoto
+                            ordine.saveOrder()
+
+                            ordine.deleteData(order: ordine.ordineVuoto)
+                            ordine.ordineVuoto = OrderStruct.empty
+                            dismiss()
+                        }
+                    }else {
+                        //If user selected only some of the products
+                        if !multiSelection.isEmpty{
+                            order.orderFood = order.orderFood.filter{ Array(multiSelection).contains($0) }
+                            
+                            printerManager.sendXMLRequest(receipt: order, subtotale: subtotale, pagamento: payement, user: auth.utente)
+                            
+                            if ordine.selectedOption == "Tavolo"{
+                                order.orderFood = order.orderFood.filter{ !Array(multiSelection).contains($0) }
+                                order.orderTotalPrice = ordine.totalAmount(ordine: order)
+                                
+                                ordine.ordineTavolo = order
+                            }else{
+                                order.orderFood = order.orderFood.filter{ !Array(multiSelection).contains($0) }
+                                order.orderTotalPrice = ordine.totalAmount(ordine: order)
+                                
+                                ordine.ordineVuoto = order
+                            }
+                        }else{
+                            if numeroConti > 1 {
+                                printerManager.sendXMLRequest(receipt: order, subtotale: subtotale, pagamento: payement, user: auth.utente)
+
+                                if ordine.selectedOption == "Tavolo"{
+                                    order.orderTotalPrice -= subtotale
+                                    ordine.ordineTavolo.orderTotalPrice -= subtotale
+
+                                }else{
+                                    order.orderTotalPrice -= subtotale
+                                    ordine.ordineVuoto.orderTotalPrice -= subtotale
+
+                                }
+                                numeroConti -= 1
+                            }else{
+                                var t = table.tableList.first{ t in
+                                    t.tableName == order.orderTable && t.waiterID == order.orderSenderID
+                                } ?? TableStruct.empty
+                                
+                                t.tableStatus = "Libero"
+                                t.tableSeatsOccupied = 0
+                                t.waiterID = ""
+                                
+                                if t.id != ""{
+                                    table.updateData(table: t)
+                                }
+                                
+                                if ordine.selectedOption == "Tavolo"{
+                                    ordine.deleteData(order: ordine.ordineTavolo)
+                                    ordine.ordineTavolo = OrderStruct.empty
+                                    dismiss()
+                                }else{
+                                    ordine.deleteData(order: ordine.ordineVuoto)
+                                    ordine.ordineVuoto = OrderStruct.empty
+                                    dismiss()
+                                }
+                            }
+                        }
+                    }
+                    payement = []
+                    pagatoDef = 0
+                    pagamentoTipo = "Contante"
+                } label: {
+                    ZStack{
+                        RoundedRectangle(cornerRadius: 15)
+                            .foregroundColor(.red)
+                        Text("Satispay")
+                            .foregroundColor(.white)
+                            .bold()
+                    }
+                }
+                Button {
+                    payement.append(pagamento(pagamentoTipo: 3, pagamentoImporto: subtotale))
+
+                    if order.orderTotalPrice == subtotale {
+                        printerManager.sendXMLRequest(receipt: order, subtotale: subtotale, pagamento: payement, user: auth.utente)
+                        
+                        var t = table.tableList.first{ t in
+                            t.tableName == order.orderTable && t.waiterID == order.orderSenderID
+                        } ?? TableStruct.empty
+                        
+                        t.tableStatus = "Libero"
+                        t.tableSeatsOccupied = 0
+                        t.waiterID = ""
+                        
+                        if t.id != ""{
+                            table.updateData(table: t)
+                        }
+                        
+                        if ordine.selectedOption == "Tavolo"{
+                            ordine.orderToModifyOrDelete = ordine.ordineTavolo
+                            ordine.saveOrder()
+
+                            ordine.deleteData(order: ordine.ordineTavolo)
+                            ordine.ordineTavolo = OrderStruct.empty
+                            dismiss()
+                        }else{
+                            ordine.orderToModifyOrDelete = ordine.ordineVuoto
+                            ordine.saveOrder()
+
+                            ordine.deleteData(order: ordine.ordineVuoto)
+                            ordine.ordineVuoto = OrderStruct.empty
+                            dismiss()
+                        }
+                    }else {
+                        //If user selected only some of the products
+                        if !multiSelection.isEmpty{
+                            order.orderFood = order.orderFood.filter{ Array(multiSelection).contains($0) }
+                            
+                            printerManager.sendXMLRequest(receipt: order, subtotale: subtotale, pagamento: payement, user: auth.utente)
+                            
+                            if ordine.selectedOption == "Tavolo"{
+                                order.orderFood = order.orderFood.filter{ !Array(multiSelection).contains($0) }
+                                order.orderTotalPrice = ordine.totalAmount(ordine: order)
+                                
+                                ordine.ordineTavolo = order
+                            }else{
+                                order.orderFood = order.orderFood.filter{ !Array(multiSelection).contains($0) }
+                                order.orderTotalPrice = ordine.totalAmount(ordine: order)
+                                
+                                ordine.ordineVuoto = order
+                            }
+                        }else{
+                            if numeroConti > 1 {
+                                printerManager.sendXMLRequest(receipt: order, subtotale: subtotale, pagamento: payement, user: auth.utente)
+
+                                if ordine.selectedOption == "Tavolo"{
+                                    order.orderTotalPrice -= subtotale
+                                    ordine.ordineTavolo.orderTotalPrice -= subtotale
+
+                                }else{
+                                    order.orderTotalPrice -= subtotale
+                                    ordine.ordineVuoto.orderTotalPrice -= subtotale
+
+                                }
+                                numeroConti -= 1
+                            }else{
+                                var t = table.tableList.first{ t in
+                                    t.tableName == order.orderTable && t.waiterID == order.orderSenderID
+                                } ?? TableStruct.empty
+                                
+                                t.tableStatus = "Libero"
+                                t.tableSeatsOccupied = 0
+                                t.waiterID = ""
+                                
+                                if t.id != ""{
+                                    table.updateData(table: t)
+                                }
+                                
+                                if ordine.selectedOption == "Tavolo"{
+                                    ordine.deleteData(order: ordine.ordineTavolo)
+                                    ordine.ordineTavolo = OrderStruct.empty
+                                    dismiss()
+                                }else{
+                                    ordine.deleteData(order: ordine.ordineVuoto)
+                                    ordine.ordineVuoto = OrderStruct.empty
+                                    dismiss()
+                                }
+                            }
+                        }
+                    }
+                    payement = []
+                    pagatoDef = 0
+                    pagamentoTipo = "Contante"
+                } label: {
+                    ZStack{
+                        RoundedRectangle(cornerRadius: 15)
+                            .foregroundColor(.purple)
+                        Text("Ticket")
+                            .foregroundColor(.white)
+                            .bold()
+                    }
+                }
+            }
+            .padding(.top)
+            .frame(height: 150)
+            /*HStack{
                 Text("Seleziona tipo di Pagamento")
                 Spacer()
                 Picker("Scegli tipo di pagamento", selection: $pagamentoTipo) {
@@ -282,14 +693,14 @@ struct CheckOut: View {
                         contanti = 0
                     }
                 }
-            }
-            Text("Con Pagamento Elettronico si intende tutti i pagamenti come: Satispay, Bancomat, etc. ")
+            }*/
+            Text("Con Satispay, Bancomat, etc. si intendono tutti i Pagamenti Elettronici con POS")
                 .hAllign(.leading)
                 .foregroundColor(.secondary)
                 .font(.caption2)
                 .padding(.bottom)
-            
-            VStack(alignment: .leading){
+            Spacer()
+            /*VStack(alignment: .leading){
                 Button("Vuoi inserire Importo Manualmente?") {
                     tastierinoSelection.toggle()
                 }
@@ -299,7 +710,7 @@ struct CheckOut: View {
             }
             .padding(.bottom)
             .hAllign(.leading)
-                
+            
             HStack{
                 Text("Importo Pagato in \(pagamentoTipo)")
                     .font(.footnote)
@@ -444,94 +855,7 @@ struct CheckOut: View {
             }else{
                 Button {
                     //If payement is for all the order
-                    if order.orderTotalPrice == subtotale {
-                        printerManager.sendXMLRequest(receipt: order, subtotale: subtotale, pagamento: payement, user: auth.utente)
-                        
-                        var t = table.tableList.first{ t in
-                            t.tableName == order.orderTable && t.waiterID == order.orderSenderID
-                        } ?? TableStruct.empty
-                        
-                        t.tableStatus = "Libero"
-                        t.tableSeatsOccupied = 0
-                        t.waiterID = ""
-                        
-                        if t.id != ""{
-                            table.updateData(table: t)
-                        }
-                        
-                        if ordine.selectedOption == "Tavolo"{
-                            ordine.orderToModifyOrDelete = ordine.ordineTavolo
-                            ordine.saveOrder()
-
-                            ordine.deleteData(order: ordine.ordineTavolo)
-                            ordine.ordineTavolo = OrderStruct.empty
-                            dismiss()
-                        }else{
-                            ordine.orderToModifyOrDelete = ordine.ordineVuoto
-                            ordine.saveOrder()
-
-                            ordine.deleteData(order: ordine.ordineVuoto)
-                            ordine.ordineVuoto = OrderStruct.empty
-                            dismiss()
-                        }
-                    }else {
-                        //If user selected only some of the products
-                        if !multiSelection.isEmpty{
-                            order.orderFood = order.orderFood.filter{ Array(multiSelection).contains($0) }
-                            
-                            printerManager.sendXMLRequest(receipt: order, subtotale: subtotale, pagamento: payement, user: auth.utente)
-                            
-                            if ordine.selectedOption == "Tavolo"{
-                                order.orderFood = order.orderFood.filter{ !Array(multiSelection).contains($0) }
-                                order.orderTotalPrice = ordine.totalAmount(ordine: order)
-                                
-                                ordine.ordineTavolo = order
-                            }else{
-                                order.orderFood = order.orderFood.filter{ !Array(multiSelection).contains($0) }
-                                order.orderTotalPrice = ordine.totalAmount(ordine: order)
-                                
-                                ordine.ordineVuoto = order
-                            }
-                        }else{
-                            if numeroConti > 1 {
-                                if ordine.selectedOption == "Tavolo"{
-                                    order.orderTotalPrice -= subtotale
-                                    ordine.ordineTavolo.orderTotalPrice -= subtotale
-
-                                }else{
-                                    order.orderTotalPrice -= subtotale
-                                    ordine.ordineVuoto.orderTotalPrice -= subtotale
-
-                                }
-                                numeroConti -= 1
-                            }else{
-                                var t = table.tableList.first{ t in
-                                    t.tableName == order.orderTable && t.waiterID == order.orderSenderID
-                                } ?? TableStruct.empty
-                                
-                                t.tableStatus = "Libero"
-                                t.tableSeatsOccupied = 0
-                                t.waiterID = ""
-                                
-                                if t.id != ""{
-                                    table.updateData(table: t)
-                                }
-                                
-                                if ordine.selectedOption == "Tavolo"{
-                                    ordine.deleteData(order: ordine.ordineTavolo)
-                                    ordine.ordineTavolo = OrderStruct.empty
-                                    dismiss()
-                                }else{
-                                    ordine.deleteData(order: ordine.ordineVuoto)
-                                    ordine.ordineVuoto = OrderStruct.empty
-                                    dismiss()
-                                }
-                            }
-                        }
-                    }
-                    payement = []
-                    pagatoDef = 0
-                    pagamentoTipo = "Contante"
+                    
                 } label: {
                     ZStack {
                         Rectangle()
@@ -547,9 +871,10 @@ struct CheckOut: View {
                 .frame(height: 70)
                 .padding(.horizontal,60)
                 .disabled(payement.isEmpty)
-            }
+            }*/
         }
         .padding()
+             
         .onAppear{
             payement = []
             contanti = subtotale
@@ -559,7 +884,6 @@ struct CheckOut: View {
             pagatoDef = contanti + elettronico + ticket
         }
     }
-    
     func buttonColor(_ cell: String) -> Color{
         if(cell == "AC" || cell == "="){
             return .accentColor.opacity(0.5)

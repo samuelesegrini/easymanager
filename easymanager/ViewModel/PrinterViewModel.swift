@@ -141,11 +141,7 @@ class PrinterViewModel : NSObject, ObservableObject {
         task.resume()
     }
     func sendXMLRequest(receipt: OrderStruct, subtotale : Double, pagamento : [pagamento], user : UserStruct) {
-        var ricevuta = receipt
-        
-        ricevuta.orderFood.removeAll { food in
-            food.foodReversed == true
-        }
+        let ricevuta = receipt
         
         let urlString = "http://192.168.001.150/cgi-bin/fpmate.cgi"
         
@@ -169,46 +165,48 @@ class PrinterViewModel : NSObject, ObservableObject {
             
             var total : Double = 0
             
-            for food in ricevuta.orderFood {
-                var foodTotal = 0.0
-                
-                let numberVariant = food.foodVariants.filter{ $0.variantChecked == true}.count
-
-                if numberVariant != 0 {
-                    for variants in food.foodVariants {
-                        if variants.variantChecked  {
-                            total += (variants.variantPrice * (food.foodQuantity / Double(numberVariant)))
-                            foodTotal += variants.variantPrice
+            for food in ricevuta.orderFood.filter({ $0.foodReversed == false}) {
+                if !food.foodReversed{
+                    var foodTotal = 0.0
+                    
+                    let numberVariant = food.foodVariants.filter{ $0.variantChecked == true}.count
+                    
+                    if numberVariant != 0 {
+                        for variants in food.foodVariants {
+                            if variants.variantChecked  {
+                                total += (variants.variantPrice * (food.foodQuantity / Double(numberVariant)))
+                                foodTotal += variants.variantPrice
+                            }
                         }
+                    }else{
+                        total += (food.foodPrice * food.foodQuantity)
+                        foodTotal += (food.foodPrice * food.foodQuantity)
                     }
-                }else{
-                    total += (food.foodPrice * food.foodQuantity)
-                    foodTotal += (food.foodPrice * food.foodQuantity)
-                }
-                
-                let maxLenght = 46
-
-                let string = String(format: "%.2f", foodTotal)
-
-                let row = "\(food.foodQuantity)x  \(food.foodName)  \(food.foodIva)%€ \(string)"
-                var output = ""
-                
-                let percentIndex = row.firstIndex(of: "%") ?? row.startIndex
-                let distance = row.distance(from: row.startIndex, to: percentIndex)
-                
-                let leftSpacesCount = max(distance, 0)
-                let rightSpacesCount = max(maxLenght - row.count - leftSpacesCount - 1, 0)
-
-                let leftSpaces = String(repeating: " ", count: leftSpacesCount)
-                let rightSpaces = String(repeating: " ", count: rightSpacesCount)
-                
-                output = "\(row.prefix(upTo: percentIndex))%\(leftSpaces)\(rightSpaces)\(row.suffix(from: row.index(after: percentIndex)))"
-                
-                print(output)
-                xmlString.append("""
+                    
+                    let maxLenght = 46
+                    
+                    let string = String(format: "%.2f", foodTotal)
+                    
+                    let row = "\(food.foodQuantity)x  \(food.foodName)  \(food.foodIva)%€ \(string)"
+                    var output = ""
+                    
+                    let percentIndex = row.firstIndex(of: "%") ?? row.startIndex
+                    let distance = row.distance(from: row.startIndex, to: percentIndex)
+                    
+                    let leftSpacesCount = max(distance, 0)
+                    let rightSpacesCount = max(maxLenght - row.count - leftSpacesCount - 1, 0)
+                    
+                    let leftSpaces = String(repeating: " ", count: leftSpacesCount)
+                    let rightSpaces = String(repeating: " ", count: rightSpacesCount)
+                    
+                    output = "\(row.prefix(upTo: percentIndex))%\(leftSpaces)\(rightSpaces)\(row.suffix(from: row.index(after: percentIndex)))"
+                    
+                    print(output)
+                    xmlString.append("""
                                     <printNormal operator=\"\(user.userNOperator)\" data=\"\(output)\" />
                                  """
-                )
+                    )
+                }
             }
             let maxLenght = 46
             let string = String(format: "%.2f", total)
@@ -247,7 +245,7 @@ class PrinterViewModel : NSObject, ObservableObject {
                 <printerFiscalReceipt>
                 <beginFiscalReceipt operator=\"\(user.userNOperator)\" />
             """
-            for food in ricevuta.orderFood {
+            for food in ricevuta.orderFood.filter({ $0.foodReversed == false}) {
                 var department = 1
                 if food.foodIva == "22"{
                     department = 1
