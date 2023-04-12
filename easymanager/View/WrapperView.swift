@@ -52,21 +52,25 @@ struct WrapperView: View {
             }
         }else {
             TabView {
-                if auth.utente.userRoles.contains("cucina"){
+                /*if auth.utente.userRoles.contains("cucina"){
                     CookingView()
                         .tabItem {
                             Label("Cucina", systemImage: "cooktop")
                         }
-                }
+                }*/
                 if !auth.utente.userRoles.filter({$0 == "pos"}).isEmpty {
                     CashDesk()
                         .tabItem {
                             Label("POS", systemImage: "wallet.pass")
                         }
-                    DiningView()
+                    OrdersView()
+                        .tabItem {
+                            Label("Ordina", systemImage: "fork.knife")
+                        }
+                    /*DiningView()
                         .tabItem {
                             Label("Tavoli", systemImage: "table.furniture")
-                        }
+                        }*/
                 }else if !auth.utente.userRoles.filter({$0 == "cameriere"}).isEmpty {
                     OrdersView()
                         .tabItem {

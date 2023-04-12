@@ -27,7 +27,7 @@ class OrderViewModel: ObservableObject, Identifiable {
     @Published var ordineTavolo = OrderStruct.empty
     
     @Published var selectedOption = "Portar Via"
-    @Published var options = ["Portar Via", "Bancone", "Tavolo"]
+    @Published var options = ["Portar Via", "Tavolo"]
     
     @Published var prodottoModify = Food.empty
 }

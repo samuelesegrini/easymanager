@@ -186,11 +186,21 @@ class PrinterViewModel : NSObject, ObservableObject {
 
                     let output = insertSpacesBeforeEuroSymbol("\(food.foodQuantity)x  \(food.foodName)  \(food.foodIva)%€ \(string)")
                     
-                    print(output.count)
+                    
                     xmlString.append("""
                                     <printNormal operator=\"\(user.userNOperator)\" data=\"\(output)\" />
                                  """
                     )
+                    if Double(food.foodVariants.filter{$0.variantChecked == true}.count) != 0{
+                        for variant in food.foodVariants{
+                            if variant.variantChecked {
+                                xmlString.append("""
+                                         <printNormal operator=\"\(user.userNOperator)\" data=\"        \(variant.variantName)\" />
+                                         """
+                                )
+                            }
+                        }
+                    }
                 }
             }
             let maxLenght = 46
@@ -315,7 +325,7 @@ class PrinterViewModel : NSObject, ObservableObject {
         }
         
         // find the index of the € symbol in the input string
-        if let euroIndex = inputString.firstIndex(of: "€") {
+        if inputString.firstIndex(of: "€") != nil {
             // calculate the number of spaces needed to reach the max length
             let numSpaces = maxLength - inputString.count
             

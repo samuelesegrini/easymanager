@@ -143,6 +143,7 @@ struct CheckOut: View {
                 }else {
                     Button {
                         printerManager.sendXMLRequest(receipt: order, subtotale: subtotale, pagamento: [], user: auth.utente)
+                        
                         ordine.ordineVuoto = OrderStruct.empty
                         dismiss()
                     } label: {
@@ -155,7 +156,21 @@ struct CheckOut: View {
                         }
                     }
                     .frame(height: 70)
-                    .padding()
+                    .padding(.horizontal)
+                    
+                    Button {
+                        printerManager.sendXMLRequest(receipt: order, subtotale: subtotale, pagamento: [], user: auth.utente)
+                        ordine.deleteData(order: order)
+                        
+                        ordine.ordineVuoto = OrderStruct.empty
+                        dismiss()
+                    } label: {
+                        Text("Stampa e Cancella Preconto")
+                            .font(.title3)
+                    }
+                    .hAllign(.center)
+                    .frame(height: 70)
+                    .padding(.bottom)
                 }
             }
             .onAppear{

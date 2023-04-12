@@ -30,7 +30,8 @@ struct SideBarView: View {
                         Text("Cassa Ristorante")
                     }
                     
-                }else if !auth.utente.userRoles.filter({$0 == "cameriere"}).isEmpty {
+                }
+                if !auth.utente.userRoles.filter({$0 == "cameriere"}).isEmpty {
                     Section {
                         NavigationButton(title: "Ordina", imageName: "fork.knife", color: .yellow, nextView: OrdersView())
                         
@@ -38,12 +39,12 @@ struct SideBarView: View {
                         Text("Fai un Ordine")
                     }
                 }
-                Section {
+                /*Section {
                     NavigationButton(title: "Tavoli", imageName: "table.furniture", color: .purple, nextView: DiningView())
     
                 }header: {
                     Text("Sala")
-                }
+                }*/
                 Section {
                     NavigationButton(title: "\(auth.utente.userName) \(auth.utente.userSurname)", imageName: "person.and.background.dotted", color: .green, nextView: ProfileView())
 
