@@ -28,6 +28,8 @@ struct CashDesk: View {
                     case "Prodotti":
                         VStack{
                             ModifyOrderView(showingProduct: $showingProduct, selectedMain: $selectedMain)
+                            Divider()
+                                .foregroundColor(Color(UIColor.systemBackground))
                             if sizeClass == .compact {
                                 CustomBottomComponent()
                             }
@@ -53,7 +55,7 @@ struct CashDesk: View {
                         VStack{
                             ScontrinoView()
                         }
-                        .frame(width: (screenWidth > 430) ? screenWidth / 2.5 : 0, height: screenHeight - screenHeight / 60)
+                        .frame(width: (screenWidth > 430) ? screenWidth / 3 : 0, height: screenHeight - screenHeight / 60)
                     }
                 }
                 .background(.ultraThinMaterial)

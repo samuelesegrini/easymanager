@@ -19,26 +19,34 @@ struct ProductsComponent: View {
     @State private var searchText = ""
 
     private let adaptiveColumns = [
-        GridItem(.adaptive(minimum: 140))
+        GridItem(.adaptive(minimum: 133))
+    ]
+    
+    private let adaptiveColumnsCateg = [
+        GridItem(.adaptive(minimum: 70))
     ]
     
     var body: some View {
         HStack(spacing: 0) {
-            VStack(alignment: .leading){
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack {
-                        ForEach(prodotto.categoryList){ categoria in
-                            Button {
-                                searchText = categoria.categoryName
-                            } label: {
+            VStack{
+                LazyVGrid(columns: adaptiveColumnsCateg) {
+                    ForEach(prodotto.categoryList){ categoria in
+                        Button {
+                            searchText = categoria.categoryName
+                        } label: {
+                            ZStack{
+                                RoundedRectangle(cornerRadius: 5)
+                                    .foregroundColor(.accentColor)
+                                    .opacity(0.17)
                                 Text(categoria.categoryName)
                                     .font(.caption)
                             }
-                            .buttonStyle(.bordered)
                         }
+                        .buttonStyle(.borderless)
+                        .frame(width: 70, height: 40)
                     }
                 }
-                .padding(.horizontal)
+                .padding(.leading)
                 .padding(.top)
                 
                 ScrollView(showsIndicators: false) {
@@ -68,7 +76,7 @@ struct ProductsComponent: View {
                                             .foregroundColor(.white)
                                         
                                         VStack(alignment: .leading) {
-                                            ZStack{
+                                            /*ZStack{
                                                 RoundedRectangle(cornerRadius: 15)
                                                     .frame(width: 120, height: 80)
                                                 if prodotti.productFavorite {
@@ -76,8 +84,8 @@ struct ProductsComponent: View {
                                                         .vAllign(.top)
                                                         .hAllign(.trailing)
                                                 }
-                                            }
-                                            Text(prodotti.productName.firstCapitalized).font(.subheadline).foregroundColor(.primary).lineLimit(2, reservesSpace: false)
+                                            }*/
+                                            Text(prodotti.productName.firstCapitalized).font(.title3).foregroundColor(.primary).lineLimit(3, reservesSpace: true)
                                                 .multilineTextAlignment(.leading).bold()
                                             
                                             HStack(alignment: .bottom) {
@@ -101,7 +109,7 @@ struct ProductsComponent: View {
                                         .padding(10)
                                     }
                                     .cornerRadius(15)
-                                    .frame(width: 140, height: 190)
+                                    .frame(width: 133, height: 160)
                                 } else {
                                     ZStack {
                                         RoundedRectangle(cornerRadius: 15)
@@ -143,12 +151,12 @@ struct ProductsComponent: View {
                                         .hAllign(.leading)
                                     }
                                     .cornerRadius(15)
-                                    .frame(width: 150, height: 110)
+                                    .frame(width: 130, height: 110)
                                 }
                             }
                         }
                     }
-                    .padding()
+                    .padding(.leading)
                     .animation(.default, value: searchText)
                 }
                 .searchable(text: $searchText, placement: .automatic, prompt: "Cerca prodotti"){
