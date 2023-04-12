@@ -182,26 +182,11 @@ class PrinterViewModel : NSObject, ObservableObject {
                         total += (food.foodPrice * food.foodQuantity)
                         foodTotal += (food.foodPrice * food.foodQuantity)
                     }
-                    
-                    let maxLenght = 46
-                    
                     let string = String(format: "%.2f", foodTotal)
+
+                    let output = insertSpacesBeforeEuroSymbol("\(food.foodQuantity)x  \(food.foodName)  \(food.foodIva)%€ \(string)")
                     
-                    let row = "\(food.foodQuantity)x  \(food.foodName)  \(food.foodIva)%€ \(string)"
-                    var output = ""
-                    
-                    let percentIndex = row.firstIndex(of: "%") ?? row.startIndex
-                    let distance = row.distance(from: row.startIndex, to: percentIndex)
-                    
-                    let leftSpacesCount = max(distance, 0)
-                    let rightSpacesCount = max(maxLenght - row.count - leftSpacesCount - 1, 0)
-                    
-                    let leftSpaces = String(repeating: " ", count: leftSpacesCount)
-                    let rightSpaces = String(repeating: " ", count: rightSpacesCount)
-                    
-                    output = "\(row.prefix(upTo: percentIndex))%\(leftSpaces)\(rightSpaces)\(row.suffix(from: row.index(after: percentIndex)))"
-                    
-                    print(output)
+                    print(output.count)
                     xmlString.append("""
                                     <printNormal operator=\"\(user.userNOperator)\" data=\"\(output)\" />
                                  """
@@ -319,5 +304,29 @@ class PrinterViewModel : NSObject, ObservableObject {
             }
         }
         task.resume()
+    }
+    func insertSpacesBeforeEuroSymbol(_ inputString: String) -> String {
+        let maxLength = 46
+        
+        if inputString.count >= maxLength {
+            // if input string is already equal to or longer than the max length,
+            // then there's no need to insert any spaces
+            return inputString
+        }
+        
+        // find the index of the € symbol in the input string
+        if let euroIndex = inputString.firstIndex(of: "€") {
+            // calculate the number of spaces needed to reach the max length
+            let numSpaces = maxLength - inputString.count
+            
+            // insert the required number of spaces before the € symbol
+            let spaces = String(repeating: " ", count: numSpaces)
+            let outputString = inputString.replacingOccurrences(of: "€", with: "\(spaces)€")
+            
+            return outputString
+        }
+        
+        // if the € symbol is not found in the input string, return the original string
+        return inputString
     }
 }
