@@ -23,7 +23,7 @@ struct ContentView: View {
                         OnBoardingView()
                             .tint(ThemeManager.themes[theme].accentColor)
                     case .payement :
-                        Text("")
+                        Text("test")
                             .tint(ThemeManager.themes[theme].accentColor)
                     }
                 }
@@ -36,5 +36,6 @@ struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView()
             .environmentObject(AuthenticationViewModel())
+            .environmentObject(DataSource())
     }
 }
