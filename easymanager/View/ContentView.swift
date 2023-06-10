@@ -23,7 +23,7 @@ struct ContentView: View {
                         OnBoardingView()
                             .tint(ThemeManager.themes[theme].accentColor)
                     case .payement :
-                        Text("test")
+                        Text("")
                             .tint(ThemeManager.themes[theme].accentColor)
                     }
                 }
